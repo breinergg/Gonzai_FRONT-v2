@@ -1,0 +1,285 @@
+<!-- SALES TABLE CARD -->
+<div class="table-card">
+
+  <!-- Dark header with inline stats -->
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Ventas Diarias</h3>
+      <div class="header-stats">
+        <span class="header-stat">
+          <span class="header-stat-num">{{ totalSales }}</span> registros
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-revenue">
+          <span class="header-stat-num">{{ formatCurrency(totalRevenue) }}</span> total
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-avg">
+          <span class="header-stat-num">{{ formatCurrency(avgSale) }}</span> promedio
+        </span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <!-- Search -->
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar descripción o usuario..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()" />
+      </div>
+      <!-- Date range -->
+      <div class="date-range-wrap">
+        <input type="date" class="date-input" [(ngModel)]="dateFrom" (change)="onDateChange()" title="Desde" />
+        <span class="date-range-sep">→</span>
+        <input type="date" class="date-input" [(ngModel)]="dateTo" (change)="onDateChange()" title="Hasta" />
+        <button class="date-clear-btn" *ngIf="dateFrom || dateTo" (click)="clearDateFilter()" title="Limpiar filtro">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <!-- Add button -->
+      <button class="btn-add" (click)="openCreateModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva Venta
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="summary-bar" *ngIf="!loading && !error && filteredSales.length > 0">
+    <div class="summary-item">
+      <span class="summary-label">Total filtrado</span>
+      <span class="summary-value summary-total">{{ formatCurrency(totalRevenue) }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-label">Promedio por venta</span>
+      <span class="summary-value">{{ formatCurrency(avgSale) }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-label">Venta más alta</span>
+      <span class="summary-value summary-best">{{ formatCurrency(bestSale) }}</span>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="table-loading">
+    <div class="spinner"></div>
+    <span>Cargando ventas...</span>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="table-error">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+    </svg>
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="loadSales()">Reintentar</button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && filteredSales.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/>
+      <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+    </svg>
+    <span class="empty-title">No hay ventas registradas</span>
+    <span class="empty-text" *ngIf="searchTerm || dateFrom || dateTo">No se encontraron ventas con los filtros aplicados</span>
+    <span class="empty-text" *ngIf="!searchTerm && !dateFrom && !dateTo">Registra la primera venta diaria para comenzar</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" *ngIf="!loading && !error && filteredSales.length > 0">
+    <table class="sales-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Participación</th>
+          <th>Descripción</th>
+          <th>Registrado por</th>
+          <th>Creación</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sale of filteredSales" class="table-row">
+
+          <!-- ID -->
+          <td class="id-cell">#{{ sale.id }}</td>
+
+          <!-- Fecha -->
+          <td>
+            <div class="date-cell">
+              <span class="date-main">{{ sale.fecha | date:'dd MMM yyyy' : 'UTC' }}</span>
+              <span class="date-day">{{ sale.fecha | date:'EEEE' : 'UTC' }}</span>
+            </div>
+          </td>
+
+          <!-- Total -->
+          <td>
+            <span class="total-cell">{{ formatCurrency(sale.total) }}</span>
+          </td>
+
+          <!-- Bar participación -->
+          <td>
+            <div class="bar-cell">
+              <div class="bar-track">
+                <div class="bar-fill" [style.width.%]="getSaleBarPercent(sale)"></div>
+              </div>
+              <span class="bar-pct">{{ getSaleBarPercent(sale) | number:'1.0-0' }}%</span>
+            </div>
+          </td>
+
+          <!-- Descripción -->
+          <td>
+            <span class="desc-cell" *ngIf="sale.descripcion">{{ sale.descripcion }}</span>
+            <span class="cell-empty" *ngIf="!sale.descripcion">—</span>
+          </td>
+
+          <!-- Usuario -->
+          <td>
+            <div class="user-cell" *ngIf="sale.usuarioNombre">
+              <div class="user-avatar">{{ getUserInitials(sale.usuarioNombre) }}</div>
+              <span class="user-name">{{ sale.usuarioNombre }}</span>
+            </div>
+            <span class="cell-empty" *ngIf="!sale.usuarioNombre">—</span>
+          </td>
+
+          <!-- Fecha creación -->
+          <td class="created-cell">{{ sale.fechaCreacion | date:'dd MMM yyyy, HH:mm' }}</td>
+
+          <!-- Actions -->
+          <td>
+            <div class="action-btns">
+              <button class="action-btn action-edit" (click)="openEditModal(sale)" title="Editar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="action-btn action-delete" (click)="openDeleteModal(sale)" title="Eliminar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="table-footer" *ngIf="!loading && !error && filteredSales.length > 0">
+    <span class="table-count">{{ filteredSales.length }} de {{ totalSales }} ventas</span>
+  </div>
+</div>
+
+<!-- CREATE / EDIT MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ editingSale ? 'Editar Venta' : 'Registrar Venta Diaria' }}</h3>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Fecha -->
+      <div class="form-group">
+        <label class="form-label">Fecha <span class="form-required">*</span></label>
+        <input type="date" class="form-input" [(ngModel)]="form.fecha" />
+      </div>
+
+      <!-- Total -->
+      <div class="form-group">
+        <label class="form-label">Total <span class="form-required">*</span></label>
+        <div class="total-input-wrap">
+          <span class="currency-prefix">$</span>
+          <input
+            type="number"
+            class="form-input total-input"
+            placeholder="0"
+            [(ngModel)]="form.total"
+            min="0"
+            step="1" />
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="form-group">
+        <label class="form-label">Descripción <span class="form-optional">(opcional)</span></label>
+        <textarea
+          class="form-input form-textarea"
+          placeholder="Detalle de la venta, observaciones..."
+          [(ngModel)]="form.descripcion"
+          maxlength="150"
+          rows="3"></textarea>
+        <span class="char-count">{{ (form.descripcion ?? '').length }}/150</span>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveSale()" [disabled]="saving || !form.fecha || form.total < 0">
+        {{ saving ? 'Guardando...' : (editingSale ? 'Actualizar' : 'Registrar Venta') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-danger">
+      <h3 class="modal-title">Eliminar Venta</h3>
+      <button class="modal-close" (click)="closeDeleteModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body delete-body">
+      <div class="delete-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <p class="delete-text">
+        ¿Eliminar la venta <strong>#{{ deletingSale?.id }}</strong>
+        del <strong>{{ deletingSale?.fecha | date:'dd MMM yyyy' : 'UTC' }}</strong>
+        por <strong>{{ deletingSale ? formatCurrency(deletingSale.total) : '' }}</strong>?
+        Esta acción no se puede deshacer.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,320 @@
+<!-- INVENTORY TABLE CARD -->
+<div class="table-card">
+
+  <!-- Dark header with inline stats -->
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Inventario</h3>
+      <div class="header-stats">
+        <span class="header-stat">
+          <span class="header-stat-num">{{ totalMovements }}</span> total
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-entrada">
+          <span class="header-stat-num">{{ totalEntradas }}</span> entradas
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-salida">
+          <span class="header-stat-num">{{ totalSalidas }}</span> salidas
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-ajuste">
+          <span class="header-stat-num">{{ totalAjustes }}</span> ajustes
+        </span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()" />
+      </div>
+      <select class="table-filter" [(ngModel)]="typeFilter" (change)="onTypeChange()">
+        <option value="">Todos los tipos</option>
+        <option *ngFor="let type of movementTypes" [value]="type">{{ type }}</option>
+      </select>
+      <button class="btn-add" (click)="openCreateModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nuevo Movimiento
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="table-loading">
+    <div class="spinner"></div>
+    <span>Cargando movimientos...</span>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="table-error">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+    </svg>
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="loadData()">Reintentar</button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && filteredMovements.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+    </svg>
+    <span class="empty-title">No hay movimientos</span>
+    <span class="empty-text" *ngIf="searchTerm || typeFilter">No se encontraron movimientos con los filtros aplicados</span>
+    <span class="empty-text" *ngIf="!searchTerm && !typeFilter">Registra el primer movimiento de inventario</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" *ngIf="!loading && !error && filteredMovements.length > 0">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Producto</th>
+          <th>Tipo</th>
+          <th>Cantidad</th>
+          <th>Descripción</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let mov of filteredMovements" class="table-row">
+
+          <!-- ID -->
+          <td class="id-cell">#{{ mov.id }}</td>
+
+          <!-- Producto -->
+          <td>
+            <div class="product-cell">
+              <div class="product-avatar">{{ getProductInitial(mov.productoNombre) }}</div>
+              <span class="product-name">{{ mov.productoNombre }}</span>
+            </div>
+          </td>
+
+          <!-- Tipo -->
+          <td>
+            <span class="type-badge" [ngClass]="getTypeClass(mov.tipoMovimiento)">
+              <!-- Entrada arrow -->
+              <svg *ngIf="getTypeIcon(mov.tipoMovimiento) === 'up'"
+                width="10" height="10" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+              </svg>
+              <!-- Salida arrow -->
+              <svg *ngIf="getTypeIcon(mov.tipoMovimiento) === 'down'"
+                width="10" height="10" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+              </svg>
+              <!-- Ajuste icon -->
+              <svg *ngIf="getTypeIcon(mov.tipoMovimiento) === 'adjust'"
+                width="10" height="10" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ mov.tipoMovimiento }}
+            </span>
+          </td>
+
+          <!-- Cantidad -->
+          <td>
+            <span class="quantity-cell" [ngClass]="getTypeClass(mov.tipoMovimiento)">
+              <span *ngIf="mov.tipoMovimiento === 'ENTRADA'">+</span>
+              <span *ngIf="mov.tipoMovimiento === 'SALIDA'">-</span>
+              {{ mov.cantidad }}
+            </span>
+          </td>
+
+          <!-- Descripción -->
+          <td>
+            <span class="desc-cell" *ngIf="mov.descripcion">{{ mov.descripcion }}</span>
+            <span class="cell-empty" *ngIf="!mov.descripcion">—</span>
+          </td>
+
+          <!-- Fecha -->
+          <td class="date-cell">
+            <span class="date-main">{{ mov.fecha | date:'dd MMM yyyy' }}</span>
+            <span class="date-time">{{ mov.fecha | date:'HH:mm' }}</span>
+          </td>
+
+          <!-- Actions -->
+          <td>
+            <div class="action-btns">
+              <button class="action-btn action-delete" (click)="openDeleteModal(mov)" title="Eliminar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="table-footer" *ngIf="!loading && !error && filteredMovements.length > 0">
+    <span class="table-count">{{ filteredMovements.length }} de {{ totalMovements }} movimientos</span>
+  </div>
+</div>
+
+<!-- CREATE MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+          </svg>
+        </div>
+        <h3 class="modal-title">Nuevo Movimiento</h3>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Tipo de movimiento pills -->
+      <div class="form-group">
+        <label class="form-label">Tipo de Movimiento <span class="form-required">*</span></label>
+        <div class="type-pills">
+          <button
+            *ngFor="let type of movementTypes"
+            class="type-pill"
+            [ngClass]="{'pill-entrada': type === 'ENTRADA', 'pill-salida': type === 'SALIDA', 'pill-ajuste': type === 'AJUSTE', 'pill-active': form.tipoMovimiento === type}"
+            (click)="form.tipoMovimiento = type">
+            <!-- Entrada -->
+            <svg *ngIf="type === 'ENTRADA'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+            </svg>
+            <!-- Salida -->
+            <svg *ngIf="type === 'SALIDA'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+            </svg>
+            <!-- Ajuste -->
+            <svg *ngIf="type === 'AJUSTE'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {{ type }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Producto -->
+      <div class="form-group">
+        <label class="form-label">Producto <span class="form-required">*</span></label>
+        <select class="form-input" [(ngModel)]="form.productoId">
+          <option [ngValue]="0" disabled>Seleccionar producto...</option>
+          <option *ngFor="let p of products" [ngValue]="p.id">
+            {{ p.nombre }} (Stock: {{ p.stockActual }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Cantidad -->
+      <div class="form-group">
+        <label class="form-label">Cantidad <span class="form-required">*</span></label>
+        <div class="quantity-input-wrap">
+          <button class="qty-btn" (click)="form.cantidad = form.cantidad > 1 ? form.cantidad - 1 : 1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <input
+            type="number"
+            class="form-input qty-input"
+            [(ngModel)]="form.cantidad"
+            min="1"
+            max="99999" />
+          <button class="qty-btn" (click)="form.cantidad = form.cantidad + 1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="form-group">
+        <label class="form-label">Descripción <span class="form-optional">(opcional)</span></label>
+        <textarea
+          class="form-input form-textarea"
+          placeholder="Motivo del movimiento, proveedor, nota..."
+          [(ngModel)]="form.descripcion"
+          maxlength="150"
+          rows="3"></textarea>
+        <span class="char-count">{{ (form.descripcion ?? '').length }}/150</span>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button
+        class="btn-primary"
+        [ngClass]="{'btn-entrada': form.tipoMovimiento === 'ENTRADA', 'btn-salida': form.tipoMovimiento === 'SALIDA', 'btn-ajuste': form.tipoMovimiento === 'AJUSTE'}"
+        (click)="saveMovement()"
+        [disabled]="saving || !form.productoId || form.cantidad < 1">
+        {{ saving ? 'Guardando...' : 'Registrar ' + form.tipoMovimiento }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-danger">
+      <h3 class="modal-title">Eliminar Movimiento</h3>
+      <button class="modal-close" (click)="closeDeleteModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body delete-body">
+      <div class="delete-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <p class="delete-text">
+        ¿Eliminar el movimiento <strong>#{{ deletingMovement?.id }}</strong>
+        de <strong>{{ deletingMovement?.productoNombre }}</strong>?
+        Esta acción no se puede deshacer.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>

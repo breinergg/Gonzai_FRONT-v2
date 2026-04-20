@@ -1,0 +1,574 @@
+﻿/* ================================================
+   PALETTE  –  Matte / Metallic Black & White
+   ================================================ */
+:host {
+  --black-deep:   #080808;
+  --black-matte:  #111111;
+  --charcoal:     #2C2C2C;
+  --mid-metal:    #606060;
+  --silver:       #A0A0A0;
+  --white-matte:  #F5F5F7;
+  --white-soft:   #EFEFEF;
+  --white-pure:   #FFFFFF;
+  --accent-line:  rgba(255,255,255,0.08);
+  display: block;
+  min-height: 100vh;
+}
+
+/* ================================================
+   RESET & BASE
+   ================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ================================================
+   WRAPPER
+   ================================================ */
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  background: var(--white-matte);
+  animation: loginFadeIn 0.6s ease-out both;
+}
+
+.login-wrapper.leaving {
+  animation: loginFadeOut 0.45s ease-in both;
+}
+
+/* ================================================
+   LEFT PANEL
+   ================================================ */
+.left-panel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: none;
+  background: var(--black-deep);
+  background-image: url('/login-bg.png');
+  background-size: cover;
+  background-position: center;
+}
+
+/* dot-grid: hidden when real photo is present */
+.left-grid {
+  display: none;
+}
+
+/* no orb needed over photo */
+.left-panel::before {
+  display: none;
+}
+
+/* strong bottom overlay so text is always readable */
+.left-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.72) 0%,
+    rgba(0,0,0,0.40) 30%,
+    rgba(0,0,0,0.10) 60%,
+    rgba(0,0,0,0.08) 100%
+  );
+  z-index: 1;
+}
+
+.left-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  padding: 2.5rem 2.5rem 0;
+}
+
+.left-logo { display: none; }
+
+.left-content h2 {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.9rem;
+  background: linear-gradient(100deg, #FFFFFF 0%, #C8C8C8 40%, #888888 70%, #FFFFFF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.7));
+  cursor: default;
+  transition: background-position 0.6s ease, letter-spacing 0.3s ease, filter 0.3s ease;
+}
+
+.left-content h2:hover {
+  background-position: 200% center;
+  letter-spacing: 0.05em;
+  filter: drop-shadow(0 4px 18px rgba(255,255,255,0.25));
+}
+
+.left-content h2 span {
+  color: #FFFFFF;
+  -webkit-text-fill-color: #FFFFFF;
+}
+
+.left-content > p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.7;
+  max-width: 300px;
+  font-weight: 400;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+  cursor: default;
+  transition: color 0.35s ease, letter-spacing 0.35s ease, text-shadow 0.35s ease;
+}
+
+.left-content > p:hover {
+  color: rgba(255,255,255,1);
+  letter-spacing: 0.03em;
+  text-shadow: 0 2px 16px rgba(255,255,255,0.2);
+}
+
+.left-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--charcoal);
+  transition: width 0.3s;
+}
+
+.dot.active {
+  width: 22px;
+  background: var(--white-matte);
+}
+
+.left-footer {
+  position: absolute;
+  bottom: 2rem;
+  left: 3rem;
+  right: 3rem;
+  z-index: 2;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 1rem;
+}
+
+.left-footer p {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.footer-dev {
+  color: rgba(255,255,255,0.55);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ================================================
+   RIGHT PANEL
+   ================================================ */
+.right-panel {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.2rem;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 400px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 1.2rem 1.6rem 1.8rem;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.04),
+    0 8px 16px rgba(0,0,0,0.08),
+    0 20px 48px rgba(0,0,0,0.12),
+    0 1px 0px rgba(255,255,255,0.9) inset;
+}
+
+/* ── Brand logo ───────────────────────────── */
+.brand-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.brand-logo {
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 18px rgba(0,0,0,0.18));
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.brand-logo:hover {
+  transform: scale(1.06);
+  filter: drop-shadow(0 6px 24px rgba(0,0,0,0.28));
+}
+
+/* ── Form header ───────────────────────────── */
+.form-header { margin-bottom: 1.2rem; }
+.form-title-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.form-title-row h1 { margin-bottom: 0; }
+
+.mobile-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.6rem;
+}
+
+.mobile-logo img {
+  height: 88px;
+  width: auto;
+  object-fit: contain;
+}
+h1 {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--black-deep);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin-bottom: 0.55rem;
+}
+
+.subtitle {
+  font-size: 0.83rem;
+  color: var(--mid-metal);
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* ── Field groups ──────────────────────────── */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.1rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: var(--black-matte);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+.label-row label { margin-bottom: 0; }
+
+/* ── Input with icon ───────────────────────── */
+.input-wrap { position: relative; }
+
+.input-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #C0C0C0;
+  pointer-events: none;
+  transition: color 0.22s ease, transform 0.22s ease;
+}
+
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.78rem 1rem 0.78rem 2.55rem;
+  background: var(--white-pure);
+  border: 1.5px solid #DCDCDC;
+  border-radius: 10px;
+  color: var(--black-matte);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 400;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  -webkit-font-smoothing: antialiased;
+}
+
+input::placeholder { color: #C8C8C8; }
+
+input:focus {
+  border-color: var(--black-matte);
+  box-shadow: 0 0 0 3px rgba(17,17,17,0.07);
+}
+
+/* icon & label animate on focus */
+.input-wrap:focus-within .input-icon {
+  color: var(--black-matte);
+  transform: translateY(-50%) scale(1.15);
+}
+
+.field-group:focus-within label {
+  color: var(--black-matte);
+  letter-spacing: 0.12em;
+  transition: color 0.22s ease, letter-spacing 0.22s ease;
+}
+
+/* input wrap subtle lift */
+.input-wrap {
+  transition: transform 0.18s ease;
+}
+
+.input-wrap:focus-within {
+  transform: translateY(-1px);
+}
+
+/* ── Password toggle ───────────────────────── */
+.pwd-wrap input { padding-right: 3rem; }
+
+.eye-btn {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #C0C0C0;
+  display: flex;
+  align-items: center;
+  padding: 0.2rem;
+  transition: color 0.22s ease, transform 0.22s ease;
+}
+
+.eye-btn:hover { color: var(--black-matte); transform: translateY(-50%) scale(1.15); }
+
+/* ── Forgot link ───────────────────────────── */
+.forgot {
+  font-size: 0.75rem;
+  color: var(--mid-metal);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.18s;
+}
+
+.forgot:hover { color: var(--black-matte); }
+
+/* ── Submit button ─────────────────────────── */
+.btn-signin {
+  width: 100%;
+  padding: 0.88rem 1.5rem;
+  margin-top: 0.75rem;
+  background: linear-gradient(
+    160deg,
+    #2a2a2a 0%,
+    #1a1a1a 25%,
+    #111111 50%,
+    #1e1e1e 75%,
+    #2c2c2c 100%
+  );
+  color: var(--white-matte);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.10) inset,
+    0 -1px 0 rgba(0,0,0,0.5) inset,
+    0 8px 32px rgba(0,0,0,0.45);
+  transition: transform 0.12s, box-shadow 0.2s;
+}
+
+.btn-signin svg {
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-signin:hover svg {
+  transform: translateX(6px);
+}
+
+.btn-signin:active svg {
+  transform: translateX(12px);
+  transition: transform 0.12s ease;
+}
+
+/* Brillo plateado superior */
+.btn-signin::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.25) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Resplandor metálico circular */
+.btn-signin::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(200,200,200,0.09) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.btn-signin:hover {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.14) inset,
+    0 -1px 0 rgba(0,0,0,0.5) inset,
+    0 12px 40px rgba(0,0,0,0.55);
+  transform: translateY(-1px);
+}
+
+.btn-signin:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.10) inset,
+    0 -1px 0 rgba(0,0,0,0.5) inset,
+    0 4px 16px rgba(0,0,0,0.35);
+}
+
+.btn-signin:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #fff1f1;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+
+/* ── Mobile footer: pie de página en móvil ── */
+.mobile-footer {
+  display: block;
+  background: transparent;
+  padding: 0.85rem 1.6rem 1.4rem;
+  text-align: center;
+}
+
+.mobile-footer p {
+  font-size: 0.62rem;
+  color: #B0B0B0;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.mobile-footer .footer-dev {
+  color: #C8C8C8;
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .login-wrapper {
+    flex-direction: row;
+    background: var(--black-matte);
+  }
+  .mobile-header  { display: none; }
+  .mobile-footer  { display: none; }
+  .left-panel     { display: block; }
+  .brand-mobile   { display: none; }
+
+  .right-panel {
+    flex: none;
+    width: 50%;
+    background: var(--white-matte);
+    align-items: center;
+    padding: 3rem 4rem;
+    margin-top: 0;
+    border-left: 1px solid #E8E8E8;
+  }
+
+  .form-box {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .mobile-logo { display: none; }
+
+  .form-title-row { display: block; }
+  .form-title-row h1 { margin-bottom: 0.55rem; }
+}
+
+@media (min-width: 1100px) {
+  .right-panel {
+    width: 44%;
+    padding: 3rem 5rem;
+  }
+}
+
+/* ================================================
+   ANIMATIONS
+   ================================================ */
+@keyframes loginFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loginFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}

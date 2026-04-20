@@ -1,0 +1,1031 @@
+/* ================================================
+   PALETTE  –  Matte / Metallic Black & White
+   ================================================ */
+:host {
+  --black-deep:   #080808;
+  --black-matte:  #111111;
+  --charcoal:     #2C2C2C;
+  --mid-metal:    #606060;
+  --silver:       #A0A0A0;
+  --white-matte:  #F5F5F7;
+  --white-soft:   #EFEFEF;
+  --white-pure:   #FFFFFF;
+  --accent-line:  rgba(255,255,255,0.08);
+  --glass-bg:     rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.10);
+  --glass-shine:  rgba(255,255,255,0.14);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ================================================
+   CONTENT GRID
+   ================================================ */
+.content-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.25rem;
+  padding: 1.5rem 2rem;
+  overflow-x: hidden;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+.col-left, .col-center, .col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.col-left {
+  justify-content: space-between;
+}
+
+.col-center {
+  min-height: 0;
+}
+
+/* ================================================
+   CARDS (shared)
+   ================================================ */
+.card {
+  background: var(--white-pure);
+  border-radius: 20px;
+  padding: 1.35rem;
+  border: 1px solid #D8D8D8;
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--black-deep);
+}
+
+.card-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+}
+
+.card-sublabel {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 0.15rem;
+}
+
+.card-link {
+  font-size: 0.72rem;
+  color: var(--mid-metal);
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.18s;
+}
+
+.card-link:hover { color: var(--black-matte); }
+
+/* ================================================
+   REVENUE CARD (dark)
+   ================================================ */
+.card-dark {
+  background: linear-gradient(
+    160deg,
+    #2a2a2a 0%,
+    #1a1a1a 25%,
+    #111111 50%,
+    #1e1e1e 75%,
+    #2c2c2c 100%
+  );
+  border: 1px solid rgba(255,255,255,0.13);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.10) inset,
+    0 -1px 0 rgba(0,0,0,0.5) inset,
+    0 8px 32px rgba(0,0,0,0.45);
+}
+
+/* Brillo plateado superior */
+.card-dark::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.25) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Resplandor circular metálico en esquina */
+.card-dark::after {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(200,200,200,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.card-dark:hover {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.14) inset,
+    0 -1px 0 rgba(0,0,0,0.5) inset,
+    0 16px 48px rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.22);
+  background: linear-gradient(
+    160deg,
+    #333333 0%,
+    #202020 25%,
+    #141414 50%,
+    #232323 75%,
+    #333333 100%
+  );
+}
+
+/* ── Revenue card internals ─── */
+.revenue-card {
+  padding: 1.5rem 1.6rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.revenue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
+}
+
+.revenue-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.7);
+}
+
+.revenue-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.06);
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.revenue-title {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 0.55rem;
+  letter-spacing: 0.01em;
+}
+
+.revenue-amount {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--white-pure);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 1.4rem;
+}
+
+.revenue-footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.revenue-change {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #4ade80;
+  letter-spacing: 0.01em;
+}
+
+.revenue-actions {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.btn-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: var(--white-pure);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.btn-action:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+/* ================================================
+   DEUDAS CARD
+   ================================================ */
+.deudas-card {
+  padding: 1.5rem 1.6rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.deudas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
+}
+
+.deudas-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.7);
+}
+
+.deudas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 1.2rem;
+}
+
+.deuda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.deuda-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  color: var(--white-pure);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.deuda-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.deuda-name {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--white-pure);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deuda-date {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.38);
+  font-weight: 400;
+}
+
+.deuda-amount {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f87171;
+  flex-shrink: 0;
+}
+
+.deudas-count {
+  font-size: 0.68rem;
+  color: #f87171;
+  font-weight: 600;
+}
+
+/* ================================================
+   BOTTOM ROW (2 tarjetas bajo el chat)
+   ================================================ */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ── Tarjeta resumen fusionada ─── */
+.summary-card {
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+.summary-card .bottom-card-header {
+  margin: 0 0 0.5rem 0;
+  border-radius: 20px 20px 0 0;
+}
+
+.summary-card .summary-grid {
+  padding: 0 0.9rem 0.9rem;
+}
+
+/* Stat items */
+.summary-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: 0.35rem 0.6rem;
+  background: var(--white-matte);
+  border-radius: 12px;
+  border: 1px solid #E0E0E0;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.summary-stat-item:hover {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+  transform: translateY(-1px);
+}
+
+.summary-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.15rem;
+}
+
+.summary-stat-icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+}
+
+.summary-stat-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.clients-badge  { background: #dbeafe; color: #2563eb; }
+.products-badge { background: #d1fae5; color: #059669; }
+.debt-badge     { background: #fee2e2; color: #dc2626; }
+
+.summary-stat-value {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--black-deep);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.summary-stat-name {
+  font-size: 0.85rem;
+  letter-spacing: 0;
+}
+
+.summary-stat-label {
+  font-size: 0.68rem;
+  color: #555555;
+  font-weight: 600;
+  margin-top: 0.05rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.summary-debtor-icon {
+  background: rgba(248,113,113,0.15);
+  color: #f87171;
+}
+
+.summary-debtor-amount {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #f87171;
+  margin-top: 1px;
+}
+
+/* ── Shared icon+title row ─── */
+.info-card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.info-card-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.red-icon  { background: rgba(248,113,113,0.18); color: #f87171; }
+.blue-icon { background: rgba(96,165,250,0.18);  color: #60a5fa; }
+.gray-icon { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.6); }
+
+/* ── Dark header for bottom cards ─── */
+.bottom-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--black-matte);
+  border-radius: 20px 20px 0 0;
+  margin: -1.35rem -1.35rem 0.85rem -1.35rem;
+}
+
+.bottom-card-title {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--white-pure);
+}
+
+.bottom-card-link {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.18s;
+}
+
+.bottom-card-link:hover { color: var(--white-pure); }
+
+/* ── Clientes con más deudas ─── */
+.debtor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 0.1rem;
+}
+
+.debtor-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.debtor-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--black-matte);
+  color: var(--white-pure);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.debtor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.debtor-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.debtor-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--black-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.debtor-amount {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f87171;
+  flex-shrink: 0;
+}
+
+.debt-bar-track {
+  height: 4px;
+  background: #F0F0F0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.debt-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f87171, #ef4444);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── Información general ─── */
+.registry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.registry-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  background: var(--white-matte);
+  border-radius: 10px;
+  border: 1px solid #F0F0F0;
+  transition: background 0.18s;
+}
+
+.registry-item:hover { background: var(--white-soft); }
+
+.registry-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.clients-icon    { background: rgba(96,165,250,0.12); color: #60a5fa; }
+.products-icon   { background: rgba(52,211,153,0.12); color: #34d399; }
+.orders-icon     { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.categories-icon { background: rgba(167,139,250,0.12); color: #a78bfa; }
+
+.registry-data {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.registry-label {
+  font-size: 0.65rem;
+  color: var(--silver);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.registry-value {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--black-deep);
+  line-height: 1.2;
+}
+
+/* ================================================
+   GONCHO CHAT
+   ================================================ */
+.chat-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Chat header ─── */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(
+    160deg,
+    #2a2a2a 0%,
+    #1a1a1a 25%,
+    #111111 50%,
+    #1e1e1e 75%,
+    #2c2c2c 100%
+  );
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.10) inset,
+    0 -1px 0 rgba(0,0,0,0.4) inset;
+}
+
+.chat-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.25) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chat-avatar img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.chat-header-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-name {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--white-pure);
+}
+
+.chat-status {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 400;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  flex-shrink: 0;
+}
+
+.chat-header-actions { display: flex; gap: 0.4rem; }
+
+.chat-action-btn {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.35rem;
+  cursor: pointer;
+  color: rgba(255,255,255,0.45);
+  display: flex;
+  align-items: center;
+  transition: background 0.18s, color 0.18s;
+}
+
+.chat-action-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: var(--white-pure);
+}
+
+/* ── Chat body (messages) ─── */
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--white-matte);
+  scroll-behavior: smooth;
+}
+
+.chat-body::-webkit-scrollbar { width: 4px; }
+.chat-body::-webkit-scrollbar-track { background: transparent; }
+.chat-body::-webkit-scrollbar-thumb { background: #D8D8D8; border-radius: 4px; }
+
+.chat-bubble-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.bubble-user {
+  flex-direction: row-reverse;
+}
+
+.bubble-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--black-matte);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.bubble-avatar img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.bubble {
+  max-width: 75%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.bubble-bot .bubble {
+  align-items: flex-start;
+}
+
+.bubble-user .bubble {
+  align-items: flex-end;
+}
+
+.bubble-text {
+  padding: 0.6rem 0.9rem;
+  border-radius: 16px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.bubble-bot .bubble-text {
+  background: var(--white-pure);
+  color: var(--black-deep);
+  border: 1px solid #EBEBEB;
+  border-bottom-left-radius: 4px;
+}
+
+.bubble-user .bubble-text {
+  background: var(--black-matte);
+  color: var(--white-pure);
+  border-bottom-right-radius: 4px;
+}
+
+.bubble-time {
+  font-size: 0.6rem;
+  color: var(--silver);
+  font-weight: 400;
+}
+
+/* ── Chat input ─── */
+.chat-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid #EBEBEB;
+  background: var(--white-pure);
+  border-radius: 0 0 20px 20px;
+  flex-shrink: 0;
+}
+
+.chat-input {
+  flex: 1;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  padding: 0.55rem 1rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--black-deep);
+  background: var(--white-matte);
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.chat-input::placeholder { color: #C0C0C0; }
+.chat-input:focus { border-color: var(--black-matte); }
+
+.chat-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--black-matte);
+  border: none;
+  color: var(--white-pure);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s, transform 0.15s;
+}
+
+.chat-send-btn:hover {
+  background: var(--charcoal);
+  transform: scale(1.05);
+}
+
+/* ================================================
+   STAT CARDS (right column — kept for reference)
+   ================================================ */
+.stat-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--black-deep);
+  margin-bottom: 0.3rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.stat-value {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--black-deep);
+}
+
+.stat-change {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.stat-change.positive { color: #16a34a; }
+.stat-change.negative { color: #dc2626; }
+
+/* ── Mini bar chart ─── */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 56px;
+  margin-bottom: 0.4rem;
+}
+
+.bar {
+  flex: 1;
+  background: #E8E8E8;
+  border-radius: 4px 4px 0 0;
+  transition: background 0.2s;
+  min-width: 0;
+}
+
+.bar.highlight {
+  background: var(--black-matte);
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.chart-labels span {
+  font-size: 0.6rem;
+  color: var(--silver);
+  font-weight: 500;
+}
+
+/* ================================================
+   QUICK STATS
+   ================================================ */
+.quick-stats .card-title {
+  margin-bottom: 0.85rem;
+}
+
+.qs-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #F4F4F4;
+}
+
+.qs-item:last-child { border-bottom: none; }
+
+.qs-label {
+  font-size: 0.78rem;
+  color: var(--mid-metal);
+  font-weight: 500;
+}
+
+.qs-value {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--black-deep);
+}
+
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto auto;
+  }
+  .col-right {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .col-right .card {
+    min-width: 240px;
+    flex: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .col-left {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .col-left .card { min-width: 260px; flex: 1; }
+  .col-right {
+    grid-column: 1;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .content-grid {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .revenue-amount { font-size: 1.5rem; }
+}
