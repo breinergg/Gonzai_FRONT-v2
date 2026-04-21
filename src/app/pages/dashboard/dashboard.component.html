@@ -49,65 +49,8 @@
 
       </div>
 
-      <!-- CENTER COLUMN: GONCHO CHAT -->
+      <!-- CENTER COLUMN: RESUMEN + CHAT -->
       <div class="col-center">
-        <div class="card chat-card">
-
-          <!-- Chat header -->
-          <div class="chat-header">
-            <div class="chat-avatar">
-              <img src="/gonzai logo.png" alt="Goncho" />
-            </div>
-            <div class="chat-header-info">
-              <span class="chat-name">Goncho</span>
-              <span class="chat-status"><span class="status-dot"></span>En línea</span>
-            </div>
-            <div class="chat-header-actions">
-              <button class="chat-action-btn" title="Limpiar chat">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                  <path d="M10 11v6M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Chat body -->
-          <div class="chat-body" #chatBody>
-            <div
-              *ngFor="let msg of chatMessages"
-              class="chat-bubble-wrap"
-              [class.bubble-user]="msg.from === 'user'"
-              [class.bubble-bot]="msg.from === 'bot'">
-              <div *ngIf="msg.from === 'bot'" class="bubble-avatar">
-                <img src="/gonzai logo.png" alt="Goncho" />
-              </div>
-              <div class="bubble">
-                <p class="bubble-text">{{ msg.text }}</p>
-                <span class="bubble-time">{{ msg.time }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chat input -->
-          <div class="chat-input-wrap">
-            <input
-              type="text"
-              class="chat-input"
-              placeholder="Escríbele a Goncho..."
-              [(ngModel)]="chatInput"
-              (keydown)="onChatKeydown($event)" />
-            <button class="chat-send-btn" (click)="sendMessage()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-          </div>
-
-        </div>
 
       <!-- TARJETA RESUMEN -->
       <div class="card summary-card">
@@ -177,5 +120,64 @@
         </div>
       </div>
 
+        <div class="card chat-card">
+
+          <!-- Chat header -->
+          <div class="chat-header">
+            <div class="chat-avatar">
+              <img src="/gonzai logo.png" alt="Goncho" />
+            </div>
+            <div class="chat-header-info">
+              <span class="chat-name">Goncho</span>
+              <span class="chat-status"><span class="status-dot"></span>En línea</span>
+            </div>
+            <div class="chat-header-actions">
+              <button class="chat-action-btn" title="Limpiar chat">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat body -->
+          <div class="chat-body" #chatBody>
+            <div
+              *ngFor="let msg of chatMessages"
+              class="chat-bubble-wrap"
+              [class.bubble-user]="msg.from === 'user'"
+              [class.bubble-bot]="msg.from === 'bot'">
+              <div *ngIf="msg.from === 'bot'" class="bubble-avatar">
+                <img src="/gonzai logo.png" alt="Goncho" />
+              </div>
+              <div class="bubble">
+                <p class="bubble-text">{{ msg.text }}</p>
+                <span class="bubble-time">{{ msg.time }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat input -->
+          <div class="chat-input-wrap">
+            <input
+              type="text"
+              class="chat-input"
+              placeholder="Escríbele a Goncho..."
+              [(ngModel)]="chatInput"
+              (keydown)="onChatKeydown($event)" />
+            <button class="chat-send-btn" (click)="sendMessage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+
+      </div><!-- /col-center -->
+
     </div>
-</div>

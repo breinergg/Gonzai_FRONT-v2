@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ProductRequest, ProductResponse } from '../models/product.model';
+import { ProductCreateRequest, ProductUpdateRequest, ProductResponse } from '../models/product.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -18,16 +18,22 @@ export class ProductService {
     return this.http.get<ProductResponse>(`${this.apiUrl}/${id}`);
   }
 
-  create(product: ProductRequest): Observable<ProductResponse> {
+  create(product: ProductCreateRequest): Observable<ProductResponse> {
     return this.http.post<ProductResponse>(this.apiUrl, product);
   }
 
-  update(id: number, product: ProductRequest): Observable<ProductResponse> {
+  update(id: number, product: ProductUpdateRequest): Observable<ProductResponse> {
     return this.http.put<ProductResponse>(`${this.apiUrl}/${id}`, product);
   }
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  deactivate(id: number): Observable<void> {
+    const url = `${this.apiUrl}/${id}/desactivar`;
+    console.log('[deactivate] PATCH', url);
+    return this.http.patch<void>(url, null);
   }
 
   getCountActivos(): Observable<{ productosActivos: number }> {

@@ -95,8 +95,8 @@
             </div>
           </td>
           <td>
-            <span class="category-badge" *ngIf="product.categoria">{{ product.categoria.nombre }}</span>
-            <span class="category-badge category-none" *ngIf="!product.categoria">Sin categoría</span>
+            <span class="category-badge" *ngIf="getCategoryName(product) as catName">{{ catName }}</span>
+            <span class="category-badge category-none" *ngIf="!getCategoryName(product)">Sin categoría</span>
           </td>
           <td class="price-cell">{{ product.precioCompra !== null ? ('$' + (product.precioCompra | number:'1.0-0')) : '—' }}</td>
           <td class="price-cell price-venta">{{ product.precioVenta !== null ? ('$' + (product.precioVenta | number:'1.0-0')) : '—' }}</td>
@@ -170,18 +170,26 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Stock Actual</label>
-          <input type="number" class="form-input" placeholder="0" [(ngModel)]="form.stockActual" min="0" />
+          <label class="form-label">Stock Actual<span *ngIf="editingProduct" class="form-hint"> (solo lectura)</span></label>
+          <input type="number" class="form-input" placeholder="0" [(ngModel)]="form.stockActual" min="0"
+            [readonly]="!!editingProduct" [class.input-readonly]="!!editingProduct" />
         </div>
         <div class="form-group">
           <label class="form-label">Categoría</label>
-          <select class="form-input" [(ngModel)]="form.categoriaId">
-            <option [ngValue]="null">Sin categoría</option>
-            <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nombre }}</option>
-          </select>
+          <div class="category-select-wrap">
+            <select class="form-input" [(ngModel)]="form.categoriaId">
+              <option [ngValue]="null">Sin categoría</option>
+              <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nombre }}</option>
+            </select>
+            <button type="button" class="btn-add-category" (click)="openCategoryModal()" title="Nueva categoría">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-      <div class="form-group form-toggle-group">
+      <div class="form-group form-toggle-group" *ngIf="editingProduct">
         <label class="form-label">Activo</label>
         <label class="toggle-switch">
           <input type="checkbox" [(ngModel)]="form.activo" />
@@ -198,11 +206,45 @@
   </div>
 </div>
 
+<!-- MINI-MODAL: NUEVA CATEGORÍA -->
+<div class="modal-overlay" *ngIf="showCategoryModal" (click)="closeCategoryModal()">
+  <div class="modal-card modal-mini" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Nueva Categoría</h3>
+      <button class="modal-close" (click)="closeCategoryModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre <span class="form-required">*</span></label>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="Ej: Electrónica, Ropa..."
+          [(ngModel)]="newCategoryName"
+          maxlength="100"
+          (keydown.enter)="saveCategory()" />
+        <span class="char-count">{{ newCategoryName.length }}/100</span>
+        <span class="category-error" *ngIf="categoryError">{{ categoryError }}</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCategoryModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveCategory()" [disabled]="savingCategory || !newCategoryName.trim()">
+        {{ savingCategory ? 'Guardando...' : 'Crear Categoría' }}
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- DELETE CONFIRMATION MODAL -->
 <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
   <div class="modal-card modal-small" (click)="$event.stopPropagation()">
     <div class="modal-header modal-header-danger">
-      <h3 class="modal-title">Eliminar Producto</h3>
+      <h3 class="modal-title">Desactivar Producto</h3>
       <button class="modal-close" (click)="closeDeleteModal()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -212,20 +254,18 @@
     <div class="modal-body delete-body">
       <div class="delete-icon-wrap">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
         </svg>
       </div>
       <p class="delete-text">
-        ¿Estás seguro de eliminar <strong>{{ deletingProduct?.nombre }}</strong>?
-        Esta acción no se puede deshacer.
+        ¿Estás seguro de desactivar <strong>{{ deletingProduct?.nombre }}</strong>?<br/>
+        El producto quedará inactivo y no aparecerá en las operaciones.
       </p>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-      <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
+      <button class="btn-danger" (click)="confirmDelete()">Desactivar</button>
     </div>
   </div>
 </div>

@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
-import { ProductRequest, ProductResponse } from '../../core/models/product.model';
+import { CategoryService } from '../../core/services/category.service';
+import { ProductCreateRequest, ProductUpdateRequest, ProductResponse } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-products',
@@ -25,21 +26,38 @@ export class ProductsComponent implements OnInit {
   deletingProduct: ProductResponse | null = null;
   saving = false;
 
-  form: ProductRequest = {
+  form = {
     nombre: '',
-    categoriaId: null,
-    precioCompra: null,
-    precioVenta: null,
+    categoriaId: null as number | null,
+    precioCompra: null as number | null,
+    precioVenta: null as number | null,
     stockActual: 0,
     activo: true,
   };
 
   categories: { id: number; nombre: string }[] = [];
 
-  constructor(private productService: ProductService) {}
+  // Mini-modal categoría
+  showCategoryModal = false;
+  newCategoryName = '';
+  savingCategory = false;
+  categoryError = '';
+
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAll().subscribe({
+      next: (data) => { this.categories = data; },
+      error: () => {}
+    });
   }
 
   loadProducts(): void {
@@ -48,13 +66,6 @@ export class ProductsComponent implements OnInit {
     this.productService.getAll().subscribe({
       next: (data) => {
         this.products = data;
-        const catMap = new Map<number, string>();
-        data.forEach(p => {
-          if (p.categoria && p.categoriaId) {
-            catMap.set(p.categoriaId, p.categoria.nombre);
-          }
-        });
-        this.categories = Array.from(catMap.entries()).map(([id, nombre]) => ({ id, nombre }));
         this.applyFilters();
         this.loading = false;
       },
@@ -130,7 +141,14 @@ export class ProductsComponent implements OnInit {
     this.saving = true;
 
     if (this.editingProduct) {
-      this.productService.update(this.editingProduct.id, this.form).subscribe({
+      const updatePayload: ProductUpdateRequest = {
+        nombre: this.form.nombre.trim(),
+        categoriaId: this.form.categoriaId ? Number(this.form.categoriaId) : null,
+        precioCompra: this.form.precioCompra !== null ? Number(this.form.precioCompra) : null,
+        precioVenta: this.form.precioVenta !== null ? Number(this.form.precioVenta) : null,
+        activo: this.form.activo,
+      };
+      this.productService.update(this.editingProduct.id, updatePayload).subscribe({
         next: () => {
           this.saving = false;
           this.closeModal();
@@ -142,7 +160,14 @@ export class ProductsComponent implements OnInit {
         }
       });
     } else {
-      this.productService.create(this.form).subscribe({
+      const createPayload: ProductCreateRequest = {
+        nombre: this.form.nombre.trim(),
+        categoriaId: this.form.categoriaId ? Number(this.form.categoriaId) : null,
+        precioCompra: this.form.precioCompra !== null ? Number(this.form.precioCompra) : null,
+        precioVenta: this.form.precioVenta !== null ? Number(this.form.precioVenta) : null,
+        stockActual: Number(this.form.stockActual) || 0,
+      };
+      this.productService.create(createPayload).subscribe({
         next: () => {
           this.saving = false;
           this.closeModal();
@@ -168,16 +193,57 @@ export class ProductsComponent implements OnInit {
 
   confirmDelete(): void {
     if (!this.deletingProduct) return;
-    this.productService.delete(this.deletingProduct.id).subscribe({
+    this.productService.deactivate(this.deletingProduct.id).subscribe({
       next: () => {
         this.closeDeleteModal();
         this.loadProducts();
       },
-      error: () => {
-        this.error = 'Error al eliminar el producto';
+      error: (err) => {
+        console.error('[deactivate error]', err.status, err.error);
+        this.error = 'Error al desactivar el producto';
         this.closeDeleteModal();
       }
     });
+  }
+
+  /* ── Mini-modal categoría ─── */
+  openCategoryModal(): void {
+    this.newCategoryName = '';
+    this.categoryError = '';
+    this.showCategoryModal = true;
+  }
+
+  closeCategoryModal(): void {
+    this.showCategoryModal = false;
+    this.newCategoryName = '';
+    this.categoryError = '';
+  }
+
+  saveCategory(): void {
+    const nombre = this.newCategoryName.trim();
+    if (!nombre) { this.categoryError = 'El nombre es obligatorio'; return; }
+    if (nombre.length > 100) { this.categoryError = 'Máximo 100 caracteres'; return; }
+
+    this.savingCategory = true;
+    this.categoryError = '';
+    this.categoryService.create({ nombre }).subscribe({
+      next: (cat) => {
+        this.savingCategory = false;
+        this.categories = [...this.categories, { id: cat.id, nombre: cat.nombre }];
+        this.form.categoriaId = cat.id;
+        this.closeCategoryModal();
+      },
+      error: () => {
+        this.savingCategory = false;
+        this.categoryError = 'Error al crear la categoría';
+      }
+    });
+  }
+
+  getCategoryName(product: ProductResponse): string | null {
+    if (product.categoria) return product.categoria.nombre;
+    const cat = this.categories.find(c => c.id === product.categoriaId);
+    return cat?.nombre ?? null;
   }
 
   getStatusClass(product: ProductResponse): string {
