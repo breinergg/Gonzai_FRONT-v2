@@ -280,6 +280,129 @@
 .btn-add:active { transform: translateY(0); }
 
 /* ================================================
+   MONTHLY SUMMARY BANNER
+   ================================================ */
+.monthly-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(90deg, #fafafa 0%, #f5f5f7 100%);
+  border-bottom: 1px solid #EBEBEB;
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.monthly-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.monthly-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(160deg, #2a2a2a 0%, #111111 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.6);
+  flex-shrink: 0;
+}
+
+.monthly-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--silver);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.monthly-month {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--black-deep);
+}
+
+.monthly-center {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.monthly-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+}
+
+.monthly-stat-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--silver);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.monthly-stat-val {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.monthly-current { color: var(--black-deep); }
+.monthly-prev    { color: var(--silver); font-size: 0.8rem; font-weight: 600; }
+
+.monthly-vs {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #D0D0D0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.monthly-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.monthly-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.monthly-up {
+  background: rgba(5,150,105,0.1);
+  color: #059669;
+  border: 1px solid rgba(5,150,105,0.2);
+}
+
+.monthly-down {
+  background: rgba(220,38,38,0.08);
+  color: #dc2626;
+  border: 1px solid rgba(220,38,38,0.2);
+}
+
+.monthly-badge-label {
+  font-size: 0.6rem;
+  color: var(--silver);
+  font-weight: 500;
+}
+
+/* ================================================
    SUMMARY BAR
    ================================================ */
 .summary-bar {

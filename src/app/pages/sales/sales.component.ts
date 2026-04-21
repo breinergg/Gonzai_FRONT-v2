@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DailySaleService } from '../../core/services/daily-sale.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DailySaleRequest, DailySaleResponse } from '../../core/models/daily-sale.model';
+import { DailySaleRequest, DailySaleResponse, VentaMensualResumen } from '../../core/models/daily-sale.model';
 
 @Component({
   selector: 'app-sales',
@@ -15,6 +15,8 @@ import { DailySaleRequest, DailySaleResponse } from '../../core/models/daily-sal
 export class SalesComponent implements OnInit {
   sales: DailySaleResponse[] = [];
   filteredSales: DailySaleResponse[] = [];
+  resumenMensual: VentaMensualResumen | null = null;
+  loadingResumen = true;
 
   searchTerm = '';
   dateFrom = '';
@@ -42,6 +44,7 @@ export class SalesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSales();
+    this.loadResumenMensual();
   }
 
   loadSales(): void {
@@ -91,6 +94,14 @@ export class SalesComponent implements OnInit {
     this.dateFrom = '';
     this.dateTo = '';
     this.applyFilters();
+  }
+
+  loadResumenMensual(): void {
+    this.loadingResumen = true;
+    this.saleService.getResumenMensual().subscribe({
+      next: (data) => { this.resumenMensual = data; this.loadingResumen = false; },
+      error: () => { this.loadingResumen = false; }
+    });
   }
 
   /* ── Stats ─── */

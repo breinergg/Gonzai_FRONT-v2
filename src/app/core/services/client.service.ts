@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ClientRequest, ClientResponse } from '../models/client.model';
+import { ClienteMayorDeuda, ClientesConDeudaCount, ClientRequest, ClientResponse } from '../models/client.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -28,5 +28,17 @@ export class ClientService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getMayorDeuda(): Observable<ClienteMayorDeuda> {
+    return this.http.get<ClienteMayorDeuda>(`${this.apiUrl}/mayor-deuda`);
+  }
+
+  getCountConDeuda(): Observable<ClientesConDeudaCount> {
+    return this.http.get<ClientesConDeudaCount>(`${this.apiUrl}/count-con-deuda`);
+  }
+
+  getCountActivos(): Observable<{ clientesActivos: number }> {
+    return this.http.get<{ clientesActivos: number }>(`${this.apiUrl}/count`);
   }
 }

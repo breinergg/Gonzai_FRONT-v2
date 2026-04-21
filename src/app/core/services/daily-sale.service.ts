@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { DailySaleRequest, DailySaleResponse } from '../models/daily-sale.model';
+import { DailySaleRequest, DailySaleResponse, VentaMensualResumen } from '../models/daily-sale.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -28,5 +28,9 @@ export class DailySaleService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getResumenMensual(): Observable<VentaMensualResumen> {
+    return this.http.get<VentaMensualResumen>(`${this.apiUrl}/resumen-mensual`);
   }
 }

@@ -18,3 +18,18 @@ export interface ClientRequest {
   direccion: string | null;
   activo: boolean;
 }
+
+export interface ClienteMayorDeuda {
+  id: number;
+  nombre: string;
+  telefono: string | null;
+  totalDeuda: number;
+}
+
+export interface ClientesConDeudaCount {
+  clientesConDeuda: number;
+}
+
+export interface ClientesActivosCount {
+  clientesActivos: number;
+}

@@ -1,6 +1,11 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DailySaleService } from '../../core/services/daily-sale.service';
+import { ClientService } from '../../core/services/client.service';
+import { ProductService } from '../../core/services/product.service';
+import { VentaMensualResumen } from '../../core/models/daily-sale.model';
+import { ClienteMayorDeuda, ClientesConDeudaCount } from '../../core/models/client.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,8 +14,49 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   @ViewChild('chatBody') chatBody!: ElementRef;
+
+  resumenMensual: VentaMensualResumen | null = null;
+  loadingResumen = true;
+  mayorDeuda: ClienteMayorDeuda | null = null;
+  loadingMayorDeuda = true;
+  clientesConDeuda: number = 0;
+  clientesActivos: number = 0;
+  productosActivos: number = 0;
+
+  constructor(
+    private dailySaleService: DailySaleService,
+    private clientService: ClientService,
+    private productService: ProductService,
+  ) {}
+
+  ngOnInit(): void {
+    this.dailySaleService.getResumenMensual().subscribe({
+      next: (data) => { this.resumenMensual = data; this.loadingResumen = false; },
+      error: () => { this.loadingResumen = false; }
+    });
+    this.clientService.getMayorDeuda().subscribe({
+      next: (data) => { this.mayorDeuda = data; this.loadingMayorDeuda = false; },
+      error: () => { this.loadingMayorDeuda = false; }
+    });
+    this.clientService.getCountConDeuda().subscribe({
+      next: (data) => { this.clientesConDeuda = data.clientesConDeuda; },
+      error: () => { this.clientesConDeuda = 0; }
+    });
+    this.clientService.getCountActivos().subscribe({
+      next: (data) => { this.clientesActivos = data.clientesActivos; },
+      error: () => { this.clientesActivos = 0; }
+    });
+    this.productService.getCountActivos().subscribe({
+      next: (data) => { this.productosActivos = data.productosActivos; },
+      error: () => { this.productosActivos = 0; }
+    });
+  }
+
+  formatCurrency(value: number): string {
+    return '$' + value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
+  }
 
   chatInput = '';
 

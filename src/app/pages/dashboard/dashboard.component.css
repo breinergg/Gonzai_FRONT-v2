@@ -230,6 +230,15 @@
   letter-spacing: 0.01em;
 }
 
+.revenue-change.revenue-down { color: #f87171; }
+
+.revenue-skeleton {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.03em;
+}
+
 .revenue-actions {
   display: flex;
   gap: 0.65rem;

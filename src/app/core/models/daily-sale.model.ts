@@ -14,3 +14,12 @@ export interface DailySaleRequest {
   descripcion: string | null;
   usuarioId: number | null;
 }
+
+export interface VentaMensualResumen {
+  mes: string;
+  mesAnterior: string;
+  totalMesActual: number;
+  totalMesAnterior: number;
+  porcentajeCambio: number;
+  esAumento: boolean;
+}

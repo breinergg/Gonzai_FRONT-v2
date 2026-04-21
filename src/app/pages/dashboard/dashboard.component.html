@@ -13,12 +13,19 @@
                 <polyline points="17 6 23 6 23 12"/>
               </svg>
             </div>
-            <span class="revenue-badge">Abr 2026</span>
+            <span class="revenue-badge">{{ resumenMensual ? (resumenMensual.mes | titlecase) : '—' }}</span>
           </div>
           <p class="revenue-title">Ventas de este Mes</p>
-          <h2 class="revenue-amount">$10.000.000</h2>
+          <h2 class="revenue-amount">{{ formatCurrency(resumenMensual?.totalMesActual ?? 0) }}</h2>
           <div class="revenue-footer">
-            <span class="revenue-change">&#9650; 12% vs mes anterior</span>
+            <ng-container *ngIf="resumenMensual">
+              <span class="revenue-change" [class.revenue-down]="!resumenMensual.esAumento">
+                <span *ngIf="resumenMensual.esAumento">&#9650;</span>
+                <span *ngIf="!resumenMensual.esAumento">&#9660;</span>
+                {{ resumenMensual.porcentajeCambio }}% vs {{ resumenMensual.mesAnterior | titlecase }}
+              </span>
+            </ng-container>
+            <span *ngIf="!resumenMensual" class="revenue-change" style="opacity:0.35">Sin datos</span>
           </div>
         </div>
 
@@ -34,9 +41,9 @@
             <span class="revenue-badge">Pendientes</span>
           </div>
           <p class="revenue-title">Deudas de Clientes</p>
-          <h2 class="revenue-amount">$2.400.000</h2>
+          <h2 class="revenue-amount">{{ formatCurrency(mayorDeuda?.totalDeuda ?? 0) }}</h2>
           <div class="revenue-footer">
-            <span class="deudas-count">3 clientes con deuda activa</span>
+            <span class="deudas-count">{{ clientesConDeuda }} cliente{{ clientesConDeuda !== 1 ? 's' : '' }} con deuda activa</span>
           </div>
         </div>
 
@@ -127,7 +134,7 @@
               </div>
               <span class="summary-stat-badge clients-badge">Activos</span>
             </div>
-            <span class="summary-stat-value">{{ summaryStats.clientesActivos }}</span>
+            <span class="summary-stat-value">{{ clientesActivos }}</span>
             <span class="summary-stat-label">Clientes Activos</span>
           </div>
 
@@ -141,7 +148,7 @@
               </div>
               <span class="summary-stat-badge products-badge">Activos</span>
             </div>
-            <span class="summary-stat-value">{{ summaryStats.productosActivos }}</span>
+            <span class="summary-stat-value">{{ productosActivos }}</span>
             <span class="summary-stat-label">Productos Activos</span>
           </div>
 
@@ -156,8 +163,15 @@
               </div>
               <span class="summary-stat-badge debt-badge">Mayor deuda</span>
             </div>
-            <span class="summary-stat-value summary-stat-name">{{ summaryStats.topDeudor.nombre }}</span>
-            <span class="summary-debtor-amount">${{ summaryStats.topDeudor.deuda | number:'1.2-2' }}</span>
+            <span class="summary-stat-value summary-stat-name">
+              <ng-container *ngIf="!loadingMayorDeuda && mayorDeuda">{{ mayorDeuda.nombre }}</ng-container>
+              <span *ngIf="loadingMayorDeuda" style="opacity:0.4">...</span>
+              <span *ngIf="!loadingMayorDeuda && !mayorDeuda" style="opacity:0.4">Sin clientes registrados</span>
+            </span>
+            <span class="summary-debtor-amount">
+              <ng-container *ngIf="!loadingMayorDeuda && mayorDeuda">{{ formatCurrency(mayorDeuda.totalDeuda) }}</ng-container>
+              <span *ngIf="loadingMayorDeuda" style="opacity:0.4">...</span>
+            </span>
           </div>
 
         </div>
