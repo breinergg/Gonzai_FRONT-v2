@@ -193,13 +193,13 @@ export class ProductsComponent implements OnInit {
 
   confirmDelete(): void {
     if (!this.deletingProduct) return;
-    this.productService.deactivate(this.deletingProduct.id).subscribe({
+    this.productService.delete(this.deletingProduct.id).subscribe({
       next: () => {
         this.closeDeleteModal();
         this.loadProducts();
       },
       error: (err) => {
-        console.error('[deactivate error]', err.status, err.error);
+        console.error('[delete error]', err.status, err.error);
         this.error = 'Error al desactivar el producto';
         this.closeDeleteModal();
       }

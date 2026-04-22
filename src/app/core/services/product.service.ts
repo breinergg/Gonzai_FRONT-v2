@@ -30,12 +30,6 @@ export class ProductService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  deactivate(id: number): Observable<void> {
-    const url = `${this.apiUrl}/${id}/desactivar`;
-    console.log('[deactivate] PATCH', url);
-    return this.http.patch<void>(url, null);
-  }
-
   getCountActivos(): Observable<{ productosActivos: number }> {
     return this.http.get<{ productosActivos: number }>(`${this.apiUrl}/count`);
   }

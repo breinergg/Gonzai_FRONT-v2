@@ -28,8 +28,6 @@ export class InventoryComponent implements OnInit {
   error = '';
 
   showModal = false;
-  showDeleteModal = false;
-  deletingMovement: InventoryMovementResponse | null = null;
   saving = false;
 
   readonly movementTypes = MOVEMENT_TYPES;
@@ -102,7 +100,6 @@ export class InventoryComponent implements OnInit {
   get totalMovements(): number  { return this.movements.length; }
   get totalEntradas(): number   { return this.movements.filter(m => m.tipoMovimiento === 'ENTRADA').length; }
   get totalSalidas(): number    { return this.movements.filter(m => m.tipoMovimiento === 'SALIDA').length; }
-  get totalAjustes(): number    { return this.movements.filter(m => m.tipoMovimiento === 'AJUSTE').length; }
 
   openCreateModal(): void {
     this.form = {
@@ -131,30 +128,6 @@ export class InventoryComponent implements OnInit {
       error: () => {
         this.saving = false;
         this.error = 'Error al registrar el movimiento';
-      }
-    });
-  }
-
-  openDeleteModal(movement: InventoryMovementResponse): void {
-    this.deletingMovement = movement;
-    this.showDeleteModal = true;
-  }
-
-  closeDeleteModal(): void {
-    this.showDeleteModal = false;
-    this.deletingMovement = null;
-  }
-
-  confirmDelete(): void {
-    if (!this.deletingMovement) return;
-    this.inventoryService.delete(this.deletingMovement.id).subscribe({
-      next: () => {
-        this.closeDeleteModal();
-        this.loadData();
-      },
-      error: () => {
-        this.error = 'Error al eliminar el movimiento';
-        this.closeDeleteModal();
       }
     });
   }

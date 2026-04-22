@@ -15,5 +15,5 @@ export interface InventoryMovementRequest {
   descripcion: string | null;
 }
 
-export const MOVEMENT_TYPES = ['ENTRADA', 'SALIDA', 'AJUSTE'] as const;
+export const MOVEMENT_TYPES = ['ENTRADA', 'SALIDA'] as const;
 export type MovementType = typeof MOVEMENT_TYPES[number];

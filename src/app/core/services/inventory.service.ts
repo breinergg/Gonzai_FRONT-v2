@@ -21,8 +21,4 @@ export class InventoryService {
   create(movement: InventoryMovementRequest): Observable<InventoryMovementResponse> {
     return this.http.post<InventoryMovementResponse>(this.apiUrl, movement);
   }
-
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
 }

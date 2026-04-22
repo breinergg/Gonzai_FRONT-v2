@@ -23,10 +23,6 @@
         <span class="header-stat header-stat-salida">
           <span class="header-stat-num">{{ totalSalidas }}</span> salidas
         </span>
-        <span class="header-stat-divider"></span>
-        <span class="header-stat header-stat-ajuste">
-          <span class="header-stat-num">{{ totalAjustes }}</span> ajustes
-        </span>
       </div>
     </div>
     <div class="table-header-actions">
@@ -123,12 +119,6 @@
                 stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
               </svg>
-              <!-- Ajuste icon -->
-              <svg *ngIf="getTypeIcon(mov.tipoMovimiento) === 'adjust'"
-                width="10" height="10" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
               {{ mov.tipoMovimiento }}
             </span>
           </td>
@@ -155,18 +145,7 @@
           </td>
 
           <!-- Actions -->
-          <td>
-            <div class="action-btns">
-              <button class="action-btn action-delete" (click)="openDeleteModal(mov)" title="Eliminar">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                  <path d="M10 11v6M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                </svg>
-              </button>
-            </div>
-          </td>
+          <td></td>
 
         </tr>
       </tbody>
@@ -207,7 +186,7 @@
           <button
             *ngFor="let type of movementTypes"
             class="type-pill"
-            [ngClass]="{'pill-entrada': type === 'ENTRADA', 'pill-salida': type === 'SALIDA', 'pill-ajuste': type === 'AJUSTE', 'pill-active': form.tipoMovimiento === type}"
+            [ngClass]="{'pill-entrada': type === 'ENTRADA', 'pill-salida': type === 'SALIDA', 'pill-active': form.tipoMovimiento === type}"
             (click)="form.tipoMovimiento = type">
             <!-- Entrada -->
             <svg *ngIf="type === 'ENTRADA'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -216,10 +195,6 @@
             <!-- Salida -->
             <svg *ngIf="type === 'SALIDA'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-            </svg>
-            <!-- Ajuste -->
-            <svg *ngIf="type === 'AJUSTE'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             {{ type }}
           </button>
@@ -286,35 +261,3 @@
   </div>
 </div>
 
-<!-- DELETE CONFIRMATION MODAL -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
-    <div class="modal-header modal-header-danger">
-      <h3 class="modal-title">Eliminar Movimiento</h3>
-      <button class="modal-close" (click)="closeDeleteModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-    <div class="modal-body delete-body">
-      <div class="delete-icon-wrap">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-        </svg>
-      </div>
-      <p class="delete-text">
-        ¿Eliminar el movimiento <strong>#{{ deletingMovement?.id }}</strong>
-        de <strong>{{ deletingMovement?.productoNombre }}</strong>?
-        Esta acción no se puede deshacer.
-      </p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-      <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
-    </div>
-  </div>
-</div>

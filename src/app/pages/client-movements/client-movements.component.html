@@ -1,0 +1,148 @@
+<!-- CLIENT MOVEMENTS TABLE CARD -->
+<div class="table-card">
+
+  <!-- Dark header -->
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Movimientos de Clientes</h3>
+      <div class="header-stats">
+        <span class="header-stat">
+          <span class="header-stat-num">{{ totalMovements }}</span> total
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-deuda">
+          <span class="header-stat-num">{{ totalDeudas }}</span> deudas
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-abono">
+          <span class="header-stat-num">{{ totalAbonos }}</span> abonos
+        </span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar cliente..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()" />
+      </div>
+      <select class="table-filter" [(ngModel)]="typeFilter" (change)="onTypeChange()">
+        <option value="">Todos los tipos</option>
+        <option value="deuda">Deuda</option>
+        <option value="abono">Abono</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="table-loading">
+    <div class="spinner"></div>
+    <span>Cargando movimientos...</span>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="table-error">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+    </svg>
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="loadMovements()">Reintentar</button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && filteredMovements.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/>
+      <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+    </svg>
+    <span class="empty-title">No hay movimientos</span>
+    <span class="empty-text" *ngIf="searchTerm || typeFilter">No se encontraron movimientos con los filtros aplicados</span>
+    <span class="empty-text" *ngIf="!searchTerm && !typeFilter">Aún no se han registrado movimientos de clientes</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" *ngIf="!loading && !error && filteredMovements.length > 0">
+    <table class="movements-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Descripción</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let mov of filteredMovements" class="table-row">
+
+          <!-- ID -->
+          <td class="id-cell">#{{ mov.id }}</td>
+
+          <!-- Cliente -->
+          <td>
+            <div class="client-cell">
+              <div class="client-avatar">{{ getClientInitial(mov.clienteNombre) }}</div>
+              <span class="client-name">{{ mov.clienteNombre }}</span>
+            </div>
+          </td>
+
+          <!-- Tipo -->
+          <td>
+            <span class="type-badge" [ngClass]="getTypeClass(mov.tipoMovimiento)">
+              <svg *ngIf="mov.tipoMovimiento === 'deuda'"
+                width="10" height="10" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+              </svg>
+              <svg *ngIf="mov.tipoMovimiento === 'abono'"
+                width="10" height="10" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+              </svg>
+              {{ mov.tipoMovimiento | titlecase }}
+            </span>
+          </td>
+
+          <!-- Valor -->
+          <td>
+            <span class="value-cell" [ngClass]="getTypeClass(mov.tipoMovimiento)">
+              <span *ngIf="mov.tipoMovimiento === 'deuda'">+</span>
+              <span *ngIf="mov.tipoMovimiento === 'abono'">-</span>
+              ${{ mov.valor | number:'1.2-2' }}
+            </span>
+          </td>
+
+          <!-- Descripción -->
+          <td>
+            <span class="desc-cell" *ngIf="mov.descripcion">{{ mov.descripcion }}</span>
+            <span class="cell-empty" *ngIf="!mov.descripcion">—</span>
+          </td>
+
+          <!-- Fecha -->
+          <td class="date-cell">
+            <span class="date-main">{{ mov.fecha | date:'dd MMM yyyy' }}</span>
+            <span class="date-time">{{ mov.fecha | date:'HH:mm' }}</span>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="table-footer" *ngIf="!loading && !error && filteredMovements.length > 0">
+    <span class="table-count">{{ filteredMovements.length }} de {{ totalMovements }} movimientos</span>
+  </div>
+
+</div>

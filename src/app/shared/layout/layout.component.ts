@@ -20,6 +20,7 @@ export class LayoutComponent {
     { id: 'products', label: 'Productos', icon: 'box', route: '/products' },
     { id: 'clients', label: 'Clientes', icon: 'users', route: '/clients' },
     { id: 'inventory', label: 'Inventario', icon: 'clipboard', route: '/inventory' },
+    { id: 'client-movements', label: 'Mov. Clientes', icon: 'movements', route: '/client-movements' },
     { id: 'sales', label: 'Ventas', icon: 'dollar', route: '/sales' },
   ];
 
