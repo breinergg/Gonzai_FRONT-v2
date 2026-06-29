@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { LoginRequest, TokenResponse, UsuarioResponse } from '../models/auth.model';
+import { LoginRequest, TokenResponse, UsuarioResponse, UserCreateRequest, UserUpdateRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'gonzai_token';
@@ -56,6 +56,22 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  getAllUsers(): Observable<UsuarioResponse[]> {
+    return this.http.get<UsuarioResponse[]>(this.apiUrl);
+  }
+
+  createUser(payload: UserCreateRequest): Observable<UsuarioResponse> {
+    return this.http.post<UsuarioResponse>(this.apiUrl, payload);
+  }
+
+  updateUser(id: number, payload: UserUpdateRequest): Observable<UsuarioResponse> {
+    return this.http.put<UsuarioResponse>(`${this.apiUrl}/${id}`, payload);
+  }
+
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   private isTokenExpired(token: string): boolean {

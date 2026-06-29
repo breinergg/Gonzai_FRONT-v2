@@ -15,16 +15,27 @@ export class LayoutComponent {
 
   sidebarCollapsed = false;
 
-  navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'grid', route: '/dashboard' },
-    { id: 'products', label: 'Productos', icon: 'box', route: '/products' },
-    { id: 'clients', label: 'Clientes', icon: 'users', route: '/clients' },
-    { id: 'inventory', label: 'Inventario', icon: 'clipboard', route: '/inventory' },
-    { id: 'client-movements', label: 'Mov. Clientes', icon: 'movements', route: '/client-movements' },
-    { id: 'sales', label: 'Ventas', icon: 'dollar', route: '/sales' },
+  readonly allNavItems = [
+    { id: 'dashboard',         label: 'Dashboard',      icon: 'grid',       route: '/dashboard',         adminOnly: false },
+    { id: 'products',          label: 'Productos',       icon: 'box',        route: '/products',          adminOnly: false },
+    { id: 'clients',           label: 'Clientes',        icon: 'users',      route: '/clients',           adminOnly: false },
+    { id: 'inventory',         label: 'Inventario',      icon: 'clipboard',  route: '/inventory',         adminOnly: false },
+    { id: 'client-movements',  label: 'Mov. Clientes',   icon: 'movements',  route: '/client-movements',  adminOnly: false },
+    { id: 'sales',             label: 'Ventas',          icon: 'dollar',     route: '/sales',             adminOnly: false },
+    { id: 'users',             label: 'Usuarios',        icon: 'user-admin', route: '/users',             adminOnly: true  },
   ];
 
   currentUser = this.auth.currentUser;
+
+  isAdmin = computed(() => {
+    const rol = this.auth.currentUser()?.rol?.toLowerCase() ?? '';
+    return rol === 'administrador' || rol === 'admin';
+  });
+
+  navItems = computed(() =>
+    this.allNavItems.filter(item => !item.adminOnly || this.isAdmin())
+  );
+
   userInitials = computed(() => {
     const u = this.auth.currentUser();
     if (!u) return '?';

@@ -6,8 +6,10 @@ import { ClientsComponent } from './pages/clients/clients.component';
 import { InventoryComponent } from './pages/inventory/inventory.component';
 import { SalesComponent } from './pages/sales/sales.component';
 import { ClientMovementsComponent } from './pages/client-movements/client-movements.component';
+import { UsersComponent } from './pages/users/users.component';
 import { LayoutComponent } from './shared/layout/layout.component';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -22,6 +24,7 @@ export const routes: Routes = [
       { path: 'inventory', component: InventoryComponent },
       { path: 'client-movements', component: ClientMovementsComponent },
       { path: 'sales', component: SalesComponent },
+      { path: 'users', component: UsersComponent, canActivate: [adminGuard] },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   },

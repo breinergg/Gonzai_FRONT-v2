@@ -16,3 +16,16 @@ export interface TokenResponse {
   token: string;
   usuario: UsuarioResponse;
 }
+
+export interface UserCreateRequest {
+  nombre: string;
+  email: string;
+  password: string;
+  rol: string;
+}
+
+export interface UserUpdateRequest {
+  nombre: string;
+  rol: string;
+  activo: boolean;
+}

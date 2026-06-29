@@ -1,0 +1,257 @@
+<!-- USERS TABLE CARD -->
+<div class="table-card">
+
+  <!-- Dark header -->
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Usuarios</h3>
+      <div class="header-stats">
+        <span class="header-stat header-stat-active">
+          <span class="header-stat-num">{{ activeUsers }}</span> activos
+        </span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-inactive">
+          <span class="header-stat-num">{{ inactiveUsers }}</span> inactivos
+        </span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar usuario..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()" />
+      </div>
+      <select class="table-filter" [(ngModel)]="statusFilter" (change)="onStatusChange()">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select>
+      <select class="table-filter" [(ngModel)]="rolFilter" (change)="onRolChange()">
+        <option value="">Todos los roles</option>
+        <option value="administrador">Administrador</option>
+        <option value="usuario">Usuario</option>
+      </select>
+      <button class="btn-add" (click)="openCreateModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nuevo Usuario
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="table-loading">
+    <div class="spinner"></div>
+    <span>Cargando usuarios...</span>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="table-error">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+    </svg>
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="loadUsers()">Reintentar</button>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && !error && filteredUsers.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span class="empty-title">No hay usuarios</span>
+    <span class="empty-text" *ngIf="searchTerm || statusFilter || rolFilter">No se encontraron usuarios con los filtros aplicados</span>
+    <span class="empty-text" *ngIf="!searchTerm && !statusFilter && !rolFilter">Crea el primer usuario para comenzar</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" *ngIf="!loading && !error && filteredUsers.length > 0">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Fecha creación</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers" class="table-row">
+
+          <!-- Nombre + avatar -->
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">{{ getInitials(user) }}</div>
+              <div class="user-info">
+                <span class="user-name">{{ user.nombre }}</span>
+                <span class="user-id">#{{ user.id }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Email -->
+          <td>
+            <span class="cell-text email-text">{{ user.email }}</span>
+          </td>
+
+          <!-- Rol -->
+          <td>
+            <span class="rol-badge" [ngClass]="getRolClass(user.rol)">{{ user.rol }}</span>
+          </td>
+
+          <!-- Estado -->
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(user)">{{ getStatusLabel(user) }}</span>
+          </td>
+
+          <!-- Fecha -->
+          <td>
+            <span class="date-cell">{{ formatDate(user.fechaCreacion) }}</span>
+          </td>
+
+          <!-- Acciones -->
+          <td>
+            <div class="action-btns">
+              <button class="action-btn action-edit" (click)="openEditModal(user)" title="Editar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="action-btn action-delete" (click)="openDeleteModal(user)" title="Eliminar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="table-footer" *ngIf="!loading && !error && filteredUsers.length > 0">
+    <span class="table-count">{{ filteredUsers.length }} de {{ totalUsers }} usuarios</span>
+  </div>
+</div>
+
+<!-- CREATE / EDIT MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ editingUser ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <p *ngIf="modalError" class="form-error">{{ modalError }}</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre <span class="form-required">*</span></label>
+          <input type="text" class="form-input" placeholder="Nombre completo" [(ngModel)]="form.nombre" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rol <span class="form-required">*</span></label>
+          <select class="form-input" [(ngModel)]="form.rol">
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email <span class="form-required">*</span></label>
+        <input
+          type="email"
+          class="form-input"
+          placeholder="correo@ejemplo.com"
+          [(ngModel)]="form.email"
+          [readonly]="!!editingUser" />
+        <span class="form-hint" *ngIf="editingUser">El email no se puede modificar.</span>
+      </div>
+
+      <div class="form-group" *ngIf="!editingUser">
+        <label class="form-label">
+          Contraseña <span class="form-required">*</span>
+        </label>
+        <input
+          type="password"
+          class="form-input"
+          placeholder="Mínimo 8 caracteres"
+          [(ngModel)]="form.password"
+          [minlength]="minPasswordLength" />
+        <span class="form-hint">Mínimo {{ minPasswordLength }} caracteres.</span>
+      </div>
+
+      <div class="form-group form-toggle-group" *ngIf="editingUser">
+        <label class="form-label">Activo</label>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="form.activo" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveUser()" [disabled]="isSaveDisabled">
+        {{ saving ? 'Guardando...' : (editingUser ? 'Actualizar' : 'Crear Usuario') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-danger">
+      <h3 class="modal-title">Eliminar Usuario</h3>
+      <button class="modal-close" (click)="closeDeleteModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body delete-body">
+      <div class="delete-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <p class="delete-text">
+        ¿Estás seguro de eliminar a
+        <strong>{{ deletingUser?.nombre }}</strong>?
+        Esta acción no se puede deshacer.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
