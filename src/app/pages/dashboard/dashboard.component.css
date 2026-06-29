@@ -445,6 +445,8 @@
 .summary-stat-name {
   font-size: 0.85rem;
   letter-spacing: 0;
+  text-align: center;
+  width: 100%;
 }
 
 .summary-stat-label {
@@ -470,6 +472,8 @@
   font-weight: 700;
   color: #f87171;
   margin-top: 1px;
+  text-align: center;
+  width: 100%;
 }
 
 /* ── Shared icon+title row ─── */

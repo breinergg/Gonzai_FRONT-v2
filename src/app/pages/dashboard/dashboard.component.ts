@@ -1,11 +1,14 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DailySaleService } from '../../core/services/daily-sale.service';
 import { ClientService } from '../../core/services/client.service';
 import { ProductService } from '../../core/services/product.service';
+import { ChatService } from '../../core/services/chat.service';
+import { AuthService } from '../../core/services/auth.service';
 import { VentaMensualResumen } from '../../core/models/daily-sale.model';
-import { ClienteMayorDeuda, ClientesConDeudaCount } from '../../core/models/client.model';
+import { ClienteMayorDeuda } from '../../core/models/client.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,9 +32,22 @@ export class DashboardComponent implements OnInit {
     private dailySaleService: DailySaleService,
     private clientService: ClientService,
     private productService: ProductService,
+    private chatService: ChatService,
+    private auth: AuthService,
   ) {}
 
+  chatInput = '';
+  chatLoading = false;
+
+  chatMessages: { from: 'bot' | 'user'; text: string; time: string }[] = [];
+
   ngOnInit(): void {
+    const welcomeTime = this.formatTime();
+    this.chatMessages = [
+      { from: 'bot', text: '¡Hola! Soy Goncho 👋 Tu asistente de Gonzai. ¿En qué te puedo ayudar hoy?', time: welcomeTime },
+      { from: 'bot', text: 'Puedo ayudarte con información de pedidos, inventario, productos y más.', time: welcomeTime },
+    ];
+
     this.dailySaleService.getResumenMensual().subscribe({
       next: (data) => { this.resumenMensual = data; this.loadingResumen = false; },
       error: () => { this.loadingResumen = false; }
@@ -58,63 +74,56 @@ export class DashboardComponent implements OnInit {
     return '$' + value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
   }
 
-  chatInput = '';
-
-  chatMessages: { from: 'bot' | 'user'; text: string; time: string }[] = [
-    { from: 'bot', text: '¡Hola! Soy Goncho 👋 Tu asistente de Gonzai. ¿En qué te puedo ayudar hoy?', time: '10:00' },
-    { from: 'bot', text: 'Puedo ayudarte con información de pedidos, inventario, productos y más.', time: '10:00' },
-  ];
-
-  recentOrders = [
-    { id: '#ORD-7841', customer: 'Carlos M&eacute;ndez', date: '15 Abr 2026, 10:43', status: 'Completado', amount: '$245.00' },
-    { id: '#ORD-7840', customer: 'Ana Rodr&iacute;guez', date: '15 Abr 2026, 09:22', status: 'Enviado', amount: '$120.50' },
-    { id: '#ORD-7839', customer: 'Miguel Torres', date: '14 Abr 2026, 18:05', status: 'Pendiente', amount: '$89.00' },
-    { id: '#ORD-7838', customer: 'Laura Jim&eacute;nez', date: '14 Abr 2026, 15:30', status: 'Completado', amount: '$310.00' },
-    { id: '#ORD-7837', customer: 'Pedro Garc&iacute;a', date: '14 Abr 2026, 12:15', status: 'Completado', amount: '$67.80' },
-    { id: '#ORD-7836', customer: 'Sof&iacute;a L&oacute;pez', date: '13 Abr 2026, 20:48', status: 'Enviado', amount: '$198.00' },
-  ];
-
-  topProducts = [
-    { name: 'Camiseta Premium', sales: 142, avatar: 'C' },
-    { name: 'Zapatillas Urban', sales: 98, avatar: 'Z' },
-    { name: 'Gorra Metallic', sales: 87, avatar: 'G' },
-    { name: 'Hoodie Classic', sales: 76, avatar: 'H' },
-    { name: 'Pantalón Cargo', sales: 65, avatar: 'P' },
-  ];
-
-  topDebtors = [
-    { name: 'Miguel Torres', amount: '$2,400.00', avatar: 'MT', pct: 52 },
-    { name: 'Carlos Méndez', amount: '$1,200.00', avatar: 'CM', pct: 26 },
-    { name: 'Ana Rodríguez', amount: '$980.00', avatar: 'AR', pct: 22 },
-  ];
-
-  registryStats = {
-    clients: 148,
-    products: 312,
-    activeOrders: 27,
-    categories: 14,
-  };
-
-  summaryStats = {
-    clientesActivos: 45,
-    productosActivos: 120,
-    topDeudor: { nombre: 'Juan Pérez', deuda: 3500.00 },
-  };
+  private formatTime(date: Date = new Date()): string {
+    return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  }
 
   sendMessage(): void {
     const text = this.chatInput.trim();
-    if (!text) return;
-    const now = new Date();
-    const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    if (!text || this.chatLoading) return;
+    if (text.length > 2000) return;
+
+    const time = this.formatTime();
+
     this.chatMessages.push({ from: 'user', text, time });
     this.chatInput = '';
-    setTimeout(() => {
-      this.chatMessages.push({ from: 'bot', text: 'Entendido, estoy procesando tu consulta... 🤔', time });
-      setTimeout(() => {
-        const el: HTMLElement = this.chatBody?.nativeElement;
-        if (el) el.scrollTop = el.scrollHeight;
-      }, 50);
-    }, 800);
+    this.scrollChat();
+
+    this.chatLoading = true;
+    this.chatMessages.push({ from: 'bot', text: 'Escribiendo...', time });
+    const typingIndex = this.chatMessages.length - 1;
+    this.scrollChat();
+
+    const usuarioId = this.auth.currentUser()?.id ?? null;
+
+    this.chatService.send({
+      usuarioId,
+      pregunta: text,
+      usarHistorialDeBd: true,
+      historial: null,
+    }).subscribe({
+      next: (res) => {
+        const localTime = this.formatTime(new Date(res.fecha));
+        this.chatMessages[typingIndex] = { from: 'bot', text: res.respuesta, time: localTime };
+        this.chatLoading = false;
+        this.scrollChat();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.chatLoading = false;
+        if (err.status === 401) {
+          this.auth.logout();
+          return;
+        }
+        const errorText = err.status === 400
+          ? 'Mensaje inválido (vacío o demasiado largo). Intenta de nuevo.'
+          : 'No se pudo obtener respuesta. Intenta de nuevo.';
+        this.chatMessages[typingIndex] = { from: 'bot', text: errorText, time };
+        this.scrollChat();
+      },
+    });
+  }
+
+  private scrollChat(): void {
     setTimeout(() => {
       const el: HTMLElement = this.chatBody?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
