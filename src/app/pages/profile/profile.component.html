@@ -1,0 +1,246 @@
+<!-- PROFILE PAGE -->
+<div class="profile-page">
+
+  <!-- ── CARD: Datos del usuario ── -->
+  <div class="profile-card">
+
+    <!-- Dark header -->
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h3 class="card-header-title">Mi Perfil</h3>
+      </div>
+    </div>
+
+    <!-- Body: avatar + datos -->
+    <div class="card-body">
+      <div class="profile-hero">
+        <div class="hero-avatar">{{ userInitials() }}</div>
+        <div class="hero-info">
+          <span class="hero-name">{{ currentUser()?.nombre }}</span>
+          <span class="hero-email">{{ currentUser()?.email }}</span>
+          <span class="hero-role-badge" [class.badge-admin]="currentUser()?.rol?.toLowerCase() === 'admin'">
+            {{ currentUser()?.rol === 'Admin' ? 'Administrador' : 'Usuario' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="data-grid">
+
+        <div class="data-item">
+          <span class="data-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Nombre completo
+          </span>
+          <span class="data-value">{{ currentUser()?.nombre }}</span>
+        </div>
+
+        <div class="data-item">
+          <span class="data-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Correo electrónico
+          </span>
+          <span class="data-value">{{ currentUser()?.email }}</span>
+        </div>
+
+        <div class="data-item">
+          <span class="data-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            Rol
+          </span>
+          <span class="data-value">
+            {{ currentUser()?.rol === 'Admin' ? 'Administrador' : 'Usuario' }}
+          </span>
+        </div>
+
+        <div class="data-item">
+          <span class="data-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Miembro desde
+          </span>
+          <span class="data-value">{{ fechaFormateada() }}</span>
+        </div>
+
+        <div class="data-item">
+          <span class="data-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="9 11 12 14 22 4"/>
+            </svg>
+            Estado
+          </span>
+          <span class="data-value">
+            <span class="status-pill" [class.pill-active]="currentUser()?.activo" [class.pill-inactive]="!currentUser()?.activo">
+              {{ currentUser()?.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CARD: Cambiar contraseña ── -->
+  <div class="profile-card">
+
+    <!-- Dark header con toggle -->
+    <div class="card-header card-header-clickable" (click)="togglePasswordSection()">
+      <div class="card-header-left">
+        <div class="card-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </div>
+        <h3 class="card-header-title">Cambiar contraseña</h3>
+      </div>
+      <svg class="card-header-chevron" [class.rotated]="showPasswordSection"
+           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+
+    <!-- Password form (colapsable) -->
+    <div class="password-section" [class.expanded]="showPasswordSection">
+      <div class="password-body">
+
+        <!-- Success banner -->
+        <div class="alert alert-success" *ngIf="passwordSuccess">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Contraseña actualizada correctamente.
+        </div>
+
+        <!-- Error banner -->
+        <div class="alert alert-error" *ngIf="passwordError">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          {{ passwordError }}
+        </div>
+
+        <form class="password-form" (ngSubmit)="submitChangePassword()" #pwForm="ngForm">
+
+          <!-- Contraseña actual -->
+          <div class="form-field">
+            <label class="field-label">Contraseña actual</label>
+            <div class="input-wrap" [class.input-error]="false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input
+                [type]="showCurrent ? 'text' : 'password'"
+                placeholder="Ingresa tu contraseña actual"
+                [(ngModel)]="passwordForm.passwordActual"
+                name="passwordActual"
+                autocomplete="current-password"
+                required />
+              <button type="button" class="eye-btn" (click)="showCurrent = !showCurrent" tabindex="-1">
+                <svg *ngIf="!showCurrent" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg *ngIf="showCurrent" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nueva contraseña -->
+          <div class="form-field">
+            <label class="field-label">Nueva contraseña</label>
+            <div class="input-wrap" [class.input-error]="passwordTooShort">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input
+                [type]="showNew ? 'text' : 'password'"
+                placeholder="Mínimo 8 caracteres"
+                [(ngModel)]="passwordForm.nuevaPassword"
+                name="nuevaPassword"
+                autocomplete="new-password"
+                required />
+              <button type="button" class="eye-btn" (click)="showNew = !showNew" tabindex="-1">
+                <svg *ngIf="!showNew" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg *ngIf="showNew" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <span class="field-hint error-hint" *ngIf="passwordTooShort">Mínimo 8 caracteres</span>
+          </div>
+
+          <!-- Confirmar contraseña -->
+          <div class="form-field">
+            <label class="field-label">Confirmar nueva contraseña</label>
+            <div class="input-wrap" [class.input-error]="passwordMismatch">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input
+                [type]="showConfirm ? 'text' : 'password'"
+                placeholder="Repite la nueva contraseña"
+                [(ngModel)]="passwordForm.confirmarPassword"
+                name="confirmarPassword"
+                autocomplete="new-password"
+                required />
+              <button type="button" class="eye-btn" (click)="showConfirm = !showConfirm" tabindex="-1">
+                <svg *ngIf="!showConfirm" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg *ngIf="showConfirm" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <span class="field-hint error-hint" *ngIf="passwordMismatch">Las contraseñas no coinciden</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="togglePasswordSection()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-save" [disabled]="!canSubmitPassword || savingPassword">
+              <span class="btn-spinner" *ngIf="savingPassword"></span>
+              <svg *ngIf="!savingPassword" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {{ savingPassword ? 'Guardando...' : 'Guardar contraseña' }}
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -29,3 +29,8 @@ export interface UserUpdateRequest {
   rol: string;
   activo: boolean;
 }
+
+export interface ChangePasswordRequest {
+  passwordActual: string;
+  nuevaPassword: string;
+}

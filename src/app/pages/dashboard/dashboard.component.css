@@ -767,9 +767,14 @@
   transition: background 0.18s, color 0.18s;
 }
 
-.chat-action-btn:hover {
+.chat-action-btn:hover:not(:disabled) {
   background: rgba(255,255,255,0.12);
   color: var(--white-pure);
+}
+
+.chat-action-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 /* ── Chat body (messages) ─── */

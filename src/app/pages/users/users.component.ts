@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { UsuarioResponse, UserCreateRequest, UserUpdateRequest } from '../../core/models/auth.model';
@@ -26,11 +27,15 @@ export class UsersComponent implements OnInit {
   showDeleteModal = false;
   editingUser: UsuarioResponse | null = null;
   deletingUser: UsuarioResponse | null = null;
+  deleting = false;
+  deleteError = '';
   saving = false;
   modalError = '';
 
-  readonly roles = ['Administrador', 'Usuario'];
+  readonly roles = [AuthService.ADMIN_ROLE, 'User'];
   readonly minPasswordLength = 8;
+
+  private router = inject(Router);
 
   form: {
     nombre: string;
@@ -43,6 +48,10 @@ export class UsersComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
+    if (!this.authService.isAdmin()) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.loadUsers();
   }
 
@@ -55,7 +64,11 @@ export class UsersComponent implements OnInit {
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 403) {
+          this.router.navigate(['/dashboard']);
+          return;
+        }
         this.error = 'Error al cargar los usuarios';
         this.loading = false;
       },
@@ -81,9 +94,12 @@ export class UsersComponent implements OnInit {
     }
 
     if (this.rolFilter !== '') {
-      result = result.filter(
-        (u) => u.rol.toLowerCase() === this.rolFilter.toLowerCase()
-      );
+      result = result.filter((u) => {
+        const r = u.rol.toLowerCase();
+        if (this.rolFilter === 'admin') return r === 'admin' || r === 'administrador';
+        if (this.rolFilter === 'user') return r !== 'admin' && r !== 'administrador';
+        return r === this.rolFilter.toLowerCase();
+      });
     }
 
     this.filteredUsers = result;
@@ -142,6 +158,11 @@ export class UsersComponent implements OnInit {
     this.saving = true;
 
     if (this.editingUser) {
+      if (this.isEditingSelf && !this.form.activo) {
+        this.modalError = 'No puedes desactivar tu propio usuario.';
+        return;
+      }
+
       const payload: UserUpdateRequest = {
         nombre: this.form.nombre.trim(),
         rol:    this.form.rol,
@@ -181,24 +202,36 @@ export class UsersComponent implements OnInit {
 
   openDeleteModal(user: UsuarioResponse): void {
     this.deletingUser = user;
+    this.deleteError = '';
     this.showDeleteModal = true;
   }
 
   closeDeleteModal(): void {
     this.showDeleteModal = false;
     this.deletingUser = null;
+    this.deleteError = '';
   }
 
   confirmDelete(): void {
-    if (!this.deletingUser) return;
+    if (!this.deletingUser || this.deleting) return;
+
+    const currentId = this.authService.currentUser()?.id;
+    if (currentId === this.deletingUser.id) {
+      this.deleteError = 'No puedes desactivar tu propio usuario.';
+      return;
+    }
+
+    this.deleting = true;
+    this.deleteError = '';
     this.authService.deleteUser(this.deletingUser.id).subscribe({
       next: () => {
+        this.deleting = false;
         this.closeDeleteModal();
         this.loadUsers();
       },
-      error: () => {
-        this.error = 'Error al eliminar el usuario';
-        this.closeDeleteModal();
+      error: (err: HttpErrorResponse) => {
+        this.deleting = false;
+        this.deleteError = this.parseApiError(err, 'Error al desactivar el usuario');
       },
     });
   }
@@ -220,9 +253,22 @@ export class UsersComponent implements OnInit {
   }
 
   getRolClass(rol: string): string {
-    return rol.toLowerCase() === 'administrador' || rol.toLowerCase() === 'admin'
-      ? 'rol-admin'
-      : 'rol-user';
+    const r = rol.toLowerCase();
+    return r === 'admin' || r === 'administrador' ? 'rol-admin' : 'rol-user';
+  }
+
+  getRolLabel(rol: string): string {
+    const r = rol.toLowerCase();
+    if (r === 'admin' || r === 'administrador') return 'Administrador';
+    return 'Usuario';
+  }
+
+  canDeactivate(user: UsuarioResponse): boolean {
+    return user.activo && user.id !== this.authService.currentUser()?.id;
+  }
+
+  get isEditingSelf(): boolean {
+    return this.editingUser?.id === this.authService.currentUser()?.id;
   }
 
   formatDate(iso: string): string {
@@ -258,6 +304,6 @@ export class UsersComponent implements OnInit {
   }
 
   private emptyForm() {
-    return { nombre: '', email: '', password: '', rol: 'Usuario', activo: true };
+    return { nombre: '', email: '', password: '', rol: 'User', activo: true };
   }
 }

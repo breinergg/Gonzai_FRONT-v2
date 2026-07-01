@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { LoginRequest, TokenResponse, UsuarioResponse, UserCreateRequest, UserUpdateRequest } from '../models/auth.model';
+import { LoginRequest, TokenResponse, UsuarioResponse, UserCreateRequest, UserUpdateRequest, ChangePasswordRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'gonzai_token';
@@ -12,6 +12,9 @@ const USER_KEY  = 'gonzai_user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/usuario`;
+
+  /** Debe coincidir con [Authorize(Roles = "Admin")] del backend */
+  static readonly ADMIN_ROLE = 'Admin';
 
   /** Reactive signal so consumers can react to auth state changes */
   readonly currentUser = signal<UsuarioResponse | null>(this.loadUser());
@@ -43,6 +46,11 @@ export class AuthService {
     return !this.isTokenExpired(token);
   }
 
+  isAdmin(): boolean {
+    const rol = this.currentUser()?.rol ?? '';
+    return rol.toLowerCase() === AuthService.ADMIN_ROLE.toLowerCase();
+  }
+
   private persist(response: TokenResponse): void {
     sessionStorage.setItem(TOKEN_KEY, response.token);
     sessionStorage.setItem(USER_KEY, JSON.stringify(response.usuario));
@@ -70,8 +78,12 @@ export class AuthService {
     return this.http.put<UsuarioResponse>(`${this.apiUrl}/${id}`, payload);
   }
 
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  deleteUser(id: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+  }
+
+  changePassword(id: number, payload: ChangePasswordRequest): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/${id}/cambiar-password`, payload);
   }
 
   private isTokenExpired(token: string): boolean {

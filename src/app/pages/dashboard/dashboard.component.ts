@@ -38,15 +38,18 @@ export class DashboardComponent implements OnInit {
 
   chatInput = '';
   chatLoading = false;
+  /** Tras limpiar, no se carga historial previo de BD; se usa solo la sesión actual */
+  useDbHistory = true;
+
+  private readonly welcomeTexts = [
+    '¡Hola! Soy Goncho 👋 Tu asistente de Gonzai. ¿En qué te puedo ayudar hoy?',
+    'Puedo ayudarte con información de pedidos, inventario, productos y más.',
+  ];
 
   chatMessages: { from: 'bot' | 'user'; text: string; time: string }[] = [];
 
   ngOnInit(): void {
-    const welcomeTime = this.formatTime();
-    this.chatMessages = [
-      { from: 'bot', text: '¡Hola! Soy Goncho 👋 Tu asistente de Gonzai. ¿En qué te puedo ayudar hoy?', time: welcomeTime },
-      { from: 'bot', text: 'Puedo ayudarte con información de pedidos, inventario, productos y más.', time: welcomeTime },
-    ];
+    this.chatMessages = this.getWelcomeMessages();
 
     this.dailySaleService.getResumenMensual().subscribe({
       next: (data) => { this.resumenMensual = data; this.loadingResumen = false; },
@@ -84,6 +87,7 @@ export class DashboardComponent implements OnInit {
     if (text.length > 2000) return;
 
     const time = this.formatTime();
+    const historial = this.useDbHistory ? null : this.buildLocalHistorial();
 
     this.chatMessages.push({ from: 'user', text, time });
     this.chatInput = '';
@@ -99,8 +103,8 @@ export class DashboardComponent implements OnInit {
     this.chatService.send({
       usuarioId,
       pregunta: text,
-      usarHistorialDeBd: true,
-      historial: null,
+      usarHistorialDeBd: this.useDbHistory,
+      historial,
     }).subscribe({
       next: (res) => {
         const localTime = this.formatTime(new Date(res.fecha));
@@ -135,5 +139,34 @@ export class DashboardComponent implements OnInit {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  clearChat(): void {
+    if (this.chatLoading) return;
+    this.chatMessages = this.getWelcomeMessages();
+    this.useDbHistory = false;
+    this.scrollChat();
+  }
+
+  get canClearChat(): boolean {
+    return !this.chatLoading && this.chatMessages.some(m => m.from === 'user');
+  }
+
+  private getWelcomeMessages(): { from: 'bot'; text: string; time: string }[] {
+    const welcomeTime = this.formatTime();
+    return this.welcomeTexts.map(text => ({ from: 'bot' as const, text, time: welcomeTime }));
+  }
+
+  private buildLocalHistorial(): { role: string; text: string }[] {
+    return this.chatMessages
+      .filter(m => m.from === 'user' || (m.from === 'bot' && !this.isWelcomeMessage(m) && m.text !== 'Escribiendo...'))
+      .map(m => ({
+        role: m.from === 'user' ? 'user' : 'model',
+        text: m.text,
+      }));
+  }
+
+  private isWelcomeMessage(msg: { from: string; text: string }): boolean {
+    return msg.from === 'bot' && this.welcomeTexts.includes(msg.text);
   }
 }

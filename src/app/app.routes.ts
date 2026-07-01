@@ -7,6 +7,7 @@ import { InventoryComponent } from './pages/inventory/inventory.component';
 import { SalesComponent } from './pages/sales/sales.component';
 import { ClientMovementsComponent } from './pages/client-movements/client-movements.component';
 import { UsersComponent } from './pages/users/users.component';
+import { ProfileComponent } from './pages/profile/profile.component';
 import { LayoutComponent } from './shared/layout/layout.component';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
@@ -25,6 +26,7 @@ export const routes: Routes = [
       { path: 'client-movements', component: ClientMovementsComponent },
       { path: 'sales', component: SalesComponent },
       { path: 'users', component: UsersComponent, canActivate: [adminGuard] },
+      { path: 'profile', component: ProfileComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   },
