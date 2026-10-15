@@ -1,0 +1,40 @@
+:host {
+  display: contents;
+  padding: 0;
+  animation: none;
+}
+
+.saldo-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 25%, #111111 50%, #1e1e1e 75%, #2c2c2c 100%);
+  border: 1px solid rgba(255,255,255,0.13);
+}
+
+.saldo-box .detail-label { color: rgba(255,255,255,0.45); display: block; }
+
+.saldo-amount {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.saldo-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  font-size: 0.66rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.monto-input { font-family: 'Poppins', system-ui, sans-serif; font-size: 1rem; font-weight: 600; }
+
+.quick-amounts { display: flex; gap: 0.4rem; }
+
+.ok-text { color: #059669 !important; }

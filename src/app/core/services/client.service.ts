@@ -1,8 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ClienteMayorDeuda, ClientesConDeudaCount, ClientCreateRequest, ClientUpdateRequest, ClientMovementCreateRequest, MovimientoClienteResponse, ClienteSaldoDto, ClientRequest, ClientResponse } from '../models/client.model';
+import {
+  ClienteMayorDeuda,
+  ClienteSaldo,
+  ClientCreateRequest,
+  ClientResponse,
+  ClientUpdateRequest,
+} from '../models/client.model';
 import { environment } from '../../../environments/environment';
+import { toParams } from '../utils/http-params';
 
 @Injectable({ providedIn: 'root' })
 export class ClientService {
@@ -10,8 +17,8 @@ export class ClientService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<ClientResponse[]> {
-    return this.http.get<ClientResponse[]>(this.apiUrl);
+  getAll(soloActivos = false): Observable<ClientResponse[]> {
+    return this.http.get<ClientResponse[]>(this.apiUrl, { params: toParams({ soloActivos }) });
   }
 
   getById(id: number): Observable<ClientResponse> {
@@ -26,28 +33,24 @@ export class ClientService {
     return this.http.put<ClientResponse>(`${this.apiUrl}/${id}`, client);
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 
-  createMovement(movement: ClientMovementCreateRequest): Observable<void> {
-    return this.http.post<void>(`${environment.apiUrl}/movimientocliente`, movement);
-  }
-
-  getAllMovements(): Observable<MovimientoClienteResponse[]> {
-    return this.http.get<MovimientoClienteResponse[]>(`${environment.apiUrl}/movimientocliente`);
-  }
-
-  getSaldo(id: number): Observable<ClienteSaldoDto> {
-    return this.http.get<ClienteSaldoDto>(`${this.apiUrl}/${id}/saldo`);
+  getSaldo(id: number): Observable<ClienteSaldo> {
+    return this.http.get<ClienteSaldo>(`${this.apiUrl}/${id}/saldo`);
   }
 
   getMayorDeuda(): Observable<ClienteMayorDeuda> {
     return this.http.get<ClienteMayorDeuda>(`${this.apiUrl}/mayor-deuda`);
   }
 
-  getCountConDeuda(): Observable<ClientesConDeudaCount> {
-    return this.http.get<ClientesConDeudaCount>(`${this.apiUrl}/count-con-deuda`);
+  getTotalDeuda(): Observable<{ totalDeuda: number }> {
+    return this.http.get<{ totalDeuda: number }>(`${this.apiUrl}/total-deuda`);
+  }
+
+  getCountConDeuda(): Observable<{ clientesConDeuda: number }> {
+    return this.http.get<{ clientesConDeuda: number }>(`${this.apiUrl}/count-con-deuda`);
   }
 
   getCountActivos(): Observable<{ clientesActivos: number }> {

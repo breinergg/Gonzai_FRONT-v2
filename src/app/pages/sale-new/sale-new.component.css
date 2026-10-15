@@ -1,0 +1,204 @@
+.main-col { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+a.btn-back { text-decoration: none; }
+
+/* ── Cliente ─── */
+.client-card { overflow: visible; }
+.client-search { position: relative; }
+
+.search-field { position: relative; display: flex; align-items: center; }
+.search-field svg { position: absolute; left: 0.8rem; color: var(--silver); pointer-events: none; }
+.search-field .form-input { padding-left: 2.1rem; }
+
+.client-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  z-index: 50;
+  background: var(--white-pure);
+  border: 1px solid #DCDCDC;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+  padding: 0.35rem;
+  max-height: 320px;
+  overflow-y: auto;
+  animation: overlayIn 0.12s ease-out;
+}
+
+.client-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.55rem;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.client-option:hover { background: var(--white-matte); }
+.client-empty { padding: 0.6rem; font-size: 0.74rem; color: var(--silver); }
+
+.client-create {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px dashed #CFCFCF;
+  border-radius: 10px;
+  background: var(--white-matte);
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--black-deep);
+  cursor: pointer;
+}
+
+.client-create:hover { border-color: #111; }
+
+.client-selected {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #E5E5E5;
+  border-radius: 14px;
+  background: var(--white-matte);
+}
+
+.client-selected .product-info { flex: 1; }
+
+.saldo-pill {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.saldo-ok   { background: #d1fae5; color: #059669; }
+.saldo-debt { background: #fee2e2; color: #dc2626; }
+
+/* ── Carrito ─── */
+.cart-search { padding-bottom: 0.5rem; gap: 0.4rem; }
+.lines-wrap { overflow-x: auto; }
+.cart-table td { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.col-price { width: 140px; }
+
+.line-error td { background: #fffafa; }
+.line-error-row td { padding-top: 0; padding-bottom: 0.45rem; text-align: left !important; }
+.line-error-row .field-error { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+.lot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 7px;
+  border: 1px dashed #CFCFCF;
+  background: var(--white-pure);
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--mid-metal);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lot-btn:hover { border-color: #111; color: var(--black-deep); }
+.lot-btn.lot-set { border-style: solid; border-color: #111; color: var(--black-deep); font-weight: 700; }
+
+/* ── Pago ─── */
+.total-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 25%, #111111 50%, #1e1e1e 75%, #2c2c2c 100%);
+  border: 1px solid rgba(255,255,255,0.13);
+}
+
+.total-display .detail-label { color: rgba(255,255,255,0.45); }
+
+.total-amount {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--white-pure);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.pay-pills .type-pill { padding: 0.55rem 0.4rem; font-size: 0.7rem; }
+
+.saldo-zero { color: #059669 !important; }
+
+.btn-block { width: 100%; }
+.btn-big { padding: 0.8rem 1rem; font-size: 0.85rem; }
+.center-hint { text-align: center; }
+
+/* ── Lotes ─── */
+.lot-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid #E5E5E5;
+  border-radius: 12px;
+  background: var(--white-matte);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, transform 0.12s;
+}
+
+.lot-option > div { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.lot-option .product-name { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.lot-option:hover:not(:disabled) { border-color: #111; transform: translateY(-1px); }
+.lot-option:disabled { opacity: 0.55; cursor: not-allowed; }
+.lot-option-active { border-color: #111; background: var(--white-pure); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+
+.lot-qty { font-family: 'Poppins', system-ui, sans-serif; font-size: 1rem; font-weight: 700; white-space: nowrap; }
+.lot-qty small { font-size: 0.6rem; color: var(--silver); font-weight: 600; }
+
+.fifo-tag {
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: #dbeafe;
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  text-transform: uppercase;
+}
+
+/* ── Recibo ─── */
+.receipt-card { width: 440px; }
+
+.receipt-client { display: flex; align-items: center; gap: 0.55rem; }
+.receipt-client .product-name { flex: 1; }
+
+.receipt-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.6rem 0;
+  border-top: 1px dashed #DCDCDC;
+  border-bottom: 1px dashed #DCDCDC;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.receipt-line { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.78rem; }
+.rl-qty { font-family: 'Poppins', system-ui, sans-serif; font-weight: 700; color: var(--mid-metal); min-width: 26px; }
+.rl-name { flex: 1; color: var(--black-deep); }
+.rl-sub { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; }
+
+.receipt-footer { flex-wrap: wrap; }

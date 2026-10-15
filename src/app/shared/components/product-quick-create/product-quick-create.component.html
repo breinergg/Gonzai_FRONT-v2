@@ -1,0 +1,233 @@
+<div class="modal-overlay overlay-top" (click)="close()">
+  <div class="modal-card modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="modal-title">{{ tab === 'product' ? 'Nuevo producto' : 'Nueva variante' }}</span>
+          <span class="modal-subtitle">{{ tab === 'product' ? 'Crea la prenda y, si aplica, sus tallas y colores' : 'Agrega una talla o color a un producto existente' }}</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="close()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="type-pills" *ngIf="allowVariantTab && !presetProductId">
+        <button type="button" class="type-pill pill-dark" [class.pill-active]="tab === 'product'" (click)="setTab('product')">Producto nuevo</button>
+        <button type="button" class="type-pill pill-dark" [class.pill-active]="tab === 'variant'" (click)="setTab('variant')">Variante de un producto existente</button>
+      </div>
+
+      <!-- ═══ PRODUCTO NUEVO ═══ -->
+      <ng-container *ngIf="tab === 'product'">
+        <div class="form-group">
+          <label class="form-label">Nombre <span class="form-required">*</span></label>
+          <input class="form-input" [class.input-invalid]="fieldErrors['nombre']" [(ngModel)]="nombre" maxlength="100" placeholder="Ej: Camiseta oversize" />
+          <span class="field-error" *ngIf="fieldErrors['nombre']">{{ fieldErrors['nombre'] }}</span>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Categoría <span class="form-optional">opcional</span></label>
+            <div class="category-select-wrap" *ngIf="!showNewCategory">
+              <select class="form-input" [(ngModel)]="categoriaId">
+                <option [ngValue]="null">Sin categoría</option>
+                <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.nombre }}</option>
+              </select>
+              <button type="button" class="btn-add-category" title="Nueva categoría" (click)="showNewCategory = true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="category-select-wrap" *ngIf="showNewCategory">
+              <input class="form-input" [(ngModel)]="newCategoryName" placeholder="Nueva categoría" (keydown.enter)="saveCategory()" />
+              <button type="button" class="btn-add-category" title="Guardar" (click)="saveCategory()" [disabled]="savingCategory">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <button type="button" class="btn-add-category" title="Cancelar" (click)="showNewCategory = false; categoryError = ''">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <span class="field-error" *ngIf="categoryError">{{ categoryError }}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Marca <span class="form-optional">opcional</span></label>
+            <input class="form-input" [(ngModel)]="marca" maxlength="50" placeholder="Ej: Gonzai" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Precio de venta</label>
+            <div class="currency-wrap">
+              <span class="currency-prefix">$</span>
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="precioVenta" placeholder="0" />
+            </div>
+          </div>
+        </div>
+
+        <label class="form-group form-toggle-group">
+          <span class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="hasVariants" />
+            <span class="toggle-slider"></span>
+          </span>
+          <span class="toggle-text">
+            Maneja tallas y/o colores
+            <small>{{ hasVariants ? 'Se creará una variante por cada combinación' : 'Se creará como prenda única (sin talla ni color)' }}</small>
+          </span>
+        </label>
+
+        <!-- Sin variantes -->
+        <div class="form-row" *ngIf="!hasVariants && withInitialStock">
+          <div class="form-group">
+            <label class="form-label">Stock inicial <span class="form-optional">unidades que ya tienes</span></label>
+            <input class="form-input" type="number" min="0" [(ngModel)]="stockInicial" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Costo unitario inicial</label>
+            <div class="currency-wrap">
+              <span class="currency-prefix">$</span>
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="costoInicial" placeholder="0" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Con variantes -->
+        <ng-container *ngIf="hasVariants">
+          <div class="form-group">
+            <label class="form-label">Tallas</label>
+            <div class="chip-group">
+              <span class="chip" *ngFor="let t of presetTallas" [class.chip-selected]="tallas().includes(t)" (click)="toggleTalla(t)">{{ t }}</span>
+            </div>
+            <div class="chip-group">
+              <span class="chip" *ngFor="let t of presetTallasNum" [class.chip-selected]="tallas().includes(t)" (click)="toggleTalla(t)">{{ t }}</span>
+              <span class="chip chip-selected" *ngFor="let t of extraTallas">
+                {{ t }}
+                <button type="button" class="chip-remove" (click)="toggleTalla(t)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            </div>
+            <div class="chip-input-row">
+              <input class="form-input input-sm" [(ngModel)]="customTalla" maxlength="20" placeholder="Otra talla (Enter para agregar)" (keydown.enter)="addCustomTalla()" />
+              <button type="button" class="btn-light" (click)="addCustomTalla()">Agregar</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Colores</label>
+            <div class="chip-group">
+              <span class="chip" *ngFor="let c of presetColores" [class.chip-selected]="colores().includes(c)" (click)="toggleColor(c)">{{ c }}</span>
+              <span class="chip chip-selected" *ngFor="let c of extraColores">
+                {{ c }}
+                <button type="button" class="chip-remove" (click)="toggleColor(c)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </span>
+            </div>
+            <div class="chip-input-row">
+              <input class="form-input input-sm" [(ngModel)]="customColor" maxlength="30" placeholder="Otro color (Enter para agregar)" (keydown.enter)="addCustomColor()" />
+              <button type="button" class="btn-light" (click)="addCustomColor()">Agregar</button>
+            </div>
+          </div>
+
+          <div class="combo-preview" *ngIf="combos().length">
+            <div class="combo-head">
+              <span class="section-title">Se crearán <span class="count-pill">{{ combos().length }}</span> variantes</span>
+              <div class="combo-cost" *ngIf="withInitialStock">
+                <span class="form-label">Costo inicial</span>
+                <div class="currency-wrap">
+                  <span class="currency-prefix currency-prefix-sm">$</span>
+                  <input class="form-input input-sm" type="number" min="0" step="1000" [(ngModel)]="costoInicial" placeholder="0" />
+                </div>
+              </div>
+            </div>
+            <div class="combo-list">
+              <div class="combo-item" *ngFor="let c of combos()">
+                <span class="combo-name">{{ c.color || '' }} {{ c.talla || '' }}</span>
+                <input
+                  *ngIf="withInitialStock"
+                  class="form-input input-sm combo-qty"
+                  type="number"
+                  min="0"
+                  placeholder="Stock"
+                  title="Stock inicial"
+                  [(ngModel)]="stockPorCombo[c.key]" />
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <!-- ═══ VARIANTE NUEVA ═══ -->
+      <ng-container *ngIf="tab === 'variant'">
+        <div class="form-group">
+          <label class="form-label">Producto <span class="form-required">*</span></label>
+          <select class="form-input" [class.input-invalid]="fieldErrors['producto']" [(ngModel)]="variantProductId" [disabled]="!!presetProductId">
+            <option [ngValue]="null" disabled>Elige un producto…</option>
+            <option *ngFor="let p of catalog()" [ngValue]="p.id">{{ p.nombre }}{{ p.marca ? ' · ' + p.marca : '' }}</option>
+          </select>
+          <span class="field-error" *ngIf="fieldErrors['producto']">{{ fieldErrors['producto'] }}</span>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Talla</label>
+            <input class="form-input" [(ngModel)]="vTalla" maxlength="20" placeholder="Ej: M" list="qc-tallas" />
+            <datalist id="qc-tallas">
+              <option *ngFor="let t of presetTallas" [value]="t"></option>
+              <option *ngFor="let t of presetTallasNum" [value]="t"></option>
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <input class="form-input" [(ngModel)]="vColor" maxlength="30" placeholder="Ej: Negro" list="qc-colores" />
+            <datalist id="qc-colores">
+              <option *ngFor="let c of presetColores" [value]="c"></option>
+            </datalist>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">SKU <span class="form-optional">opcional</span></label>
+            <input class="form-input" [(ngModel)]="vSku" maxlength="50" placeholder="Código interno" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Precio propio <span class="form-optional">si difiere del producto</span></label>
+            <div class="currency-wrap">
+              <span class="currency-prefix">$</span>
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="vPrecio" placeholder="Usa el del producto" />
+            </div>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="withInitialStock">
+          <div class="form-group">
+            <label class="form-label">Stock inicial</label>
+            <input class="form-input" type="number" min="0" [(ngModel)]="vStock" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Costo unitario inicial</label>
+            <div class="currency-wrap">
+              <span class="currency-prefix">$</span>
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="vCosto" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="close()" [disabled]="saving">Cancelar</button>
+      <button class="btn-primary" (click)="save()" [disabled]="saving">
+        <span class="spinner spinner-sm spinner-light" *ngIf="saving"></span>
+        {{ saving ? 'Guardando…' : (tab === 'product' ? 'Crear producto' : 'Crear variante') }}
+      </button>
+    </div>
+  </div>
+</div>

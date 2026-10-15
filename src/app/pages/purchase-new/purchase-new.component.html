@@ -1,0 +1,266 @@
+<div class="page-grid">
+  <!-- ═══ COLUMNA PRINCIPAL ═══ -->
+  <div class="main-col">
+    <!-- Cabecera del lote -->
+    <div class="table-card section-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <a class="btn-back" routerLink="/purchases" title="Volver a compras">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </a>
+          <div class="table-header-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+          </div>
+          <div class="title-stack">
+            <h3 class="table-header-title">Nuevo lote de compra</h3>
+            <span class="table-header-sub">Cada compra a un proveedor queda registrada como un lote con código propio</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <div class="head-grid">
+          <div class="form-group span-2">
+            <label class="form-label">Proveedor <span class="form-required">*</span></label>
+            <div class="select-plus">
+              <select class="form-input" [class.input-invalid]="fieldErrors['proveedorid']" [(ngModel)]="proveedorId">
+                <option [ngValue]="null" disabled>Elige el proveedor…</option>
+                <option *ngFor="let s of suppliers" [ngValue]="s.id">{{ s.nombre }}{{ s.documento ? ' · ' + s.documento : '' }}</option>
+              </select>
+              <button type="button" class="btn-square" title="Nuevo proveedor" (click)="openSupplierModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+            <span class="field-error" *ngIf="fieldErrors['proveedorid']">{{ fieldErrors['proveedorid'] }}</span>
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label">Nombre del lote <span class="form-optional">opcional</span></label>
+            <input class="form-input" [(ngModel)]="nombre" maxlength="100" placeholder="Ej: Pedido temporada diciembre" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">N° factura <span class="form-optional">opcional</span></label>
+            <input class="form-input" [(ngModel)]="numeroFactura" maxlength="50" placeholder="FAC-001" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input class="form-input" type="date" [(ngModel)]="fecha" [max]="today" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Costo de envío</label>
+            <div class="currency-wrap">
+              <span class="currency-prefix">$</span>
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="costoEnvio" placeholder="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Líneas -->
+    <div class="table-card section-card lines-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-header-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+            </svg>
+          </div>
+          <h3 class="table-header-title">Prendas del lote</h3>
+          <div class="header-stats">
+            <span class="header-stat"><span class="header-stat-num">{{ filledLines.length }}</span> líneas</span>
+            <span class="header-stat-divider"></span>
+            <span class="header-stat"><span class="header-stat-num">{{ totalUnidades }}</span> prendas</span>
+          </div>
+        </div>
+        <div class="table-header-actions">
+          <button class="btn-add" *ngIf="isAdmin" (click)="openQuickCreate()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Crear producto o variante
+          </button>
+        </div>
+      </div>
+
+      <div class="lines-wrap">
+        <table class="data-table lines-table">
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th>Prenda (producto · color · talla)</th>
+              <th class="th-num col-stock">Stock</th>
+              <th class="col-qty">Cantidad</th>
+              <th class="col-cost">Costo unitario</th>
+              <th class="th-num col-sub">Subtotal</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let line of lines; let i = index; trackBy: trackLine">
+              <tr class="table-row line-row" [class.line-error]="line.error">
+                <td class="col-idx"><span class="id-cell">{{ i + 1 }}</span></td>
+                <td>
+                  <app-variant-selector
+                    [compact]="true"
+                    [selectedId]="line.variant?.id ?? null"
+                    [selectedLabel]="line.variant?.nombreCompleto ?? null"
+                    [excludeIds]="usedIds(line)"
+                    [allowCreate]="isAdmin"
+                    [invalid]="!!line.error && !line.variant"
+                    placeholder="Buscar prenda…"
+                    (selected)="onVariantSelected(line, $event)"
+                    (createRequested)="openQuickCreate(line, $event)">
+                  </app-variant-selector>
+                </td>
+                <td class="td-num col-stock">
+                  <span class="stock-num" *ngIf="line.variant">{{ line.variant.stockActual }}</span>
+                  <span class="cell-empty" *ngIf="!line.variant">—</span>
+                </td>
+                <td class="col-qty">
+                  <div class="quantity-input-wrap" [class.qty-disabled]="!line.variant">
+                    <button type="button" class="qty-btn" (click)="step(line, -1)" [disabled]="!line.variant">−</button>
+                    <input class="qty-input" type="number" min="1" [(ngModel)]="line.cantidad" [disabled]="!line.variant" placeholder="0" />
+                    <button type="button" class="qty-btn" (click)="step(line, 1)" [disabled]="!line.variant">+</button>
+                  </div>
+                </td>
+                <td class="col-cost">
+                  <div class="currency-wrap">
+                    <span class="currency-prefix currency-prefix-sm">$</span>
+                    <input class="form-input input-sm" type="number" min="0" step="1000" [(ngModel)]="line.costoUnitario" [disabled]="!line.variant" placeholder="0"
+                      [class.input-invalid]="line.error && line.variant && line.costoUnitario === null" />
+                  </div>
+                </td>
+                <td class="td-num col-sub">
+                  <span class="price-cell price-venta" *ngIf="line.variant">{{ lineSubtotal(line) | cop }}</span>
+                </td>
+                <td class="col-del">
+                  <button class="action-btn btn-sm action-delete" (click)="removeLine(line)" *ngIf="line.variant || lines.length > 1" title="Quitar línea">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr class="line-error-row" *ngIf="line.error">
+                <td></td>
+                <td colspan="6"><span class="field-error">{{ line.error }}</span></td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <button class="btn-light" (click)="addLine()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar línea
+        </button>
+        <span class="table-count">Busca por nombre, color o talla. Al elegir una prenda se agrega otra línea automáticamente.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RESUMEN ═══ -->
+  <div class="sticky-side">
+    <div class="table-card section-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-header-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <h3 class="table-header-title">Resumen</h3>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="totals-box">
+          <div class="totals-row"><span>Prendas</span><strong>{{ totalUnidades }}</strong></div>
+          <div class="totals-row"><span>Subtotal prendas</span><strong>{{ subtotal | cop }}</strong></div>
+          <div class="totals-row"><span>Costo de envío</span><strong>{{ (costoEnvio ?? 0) | cop }}</strong></div>
+          <div class="totals-row totals-grand"><span>Total del lote</span><strong>{{ total | cop }}</strong></div>
+        </div>
+        <span class="form-hint" *ngIf="envioPorPrenda > 0">El envío suma {{ envioPorPrenda | cop }} por prenda al calcular la ganancia neta del lote.</span>
+
+        <div class="form-group">
+          <label class="form-label">Descripción <span class="form-optional">opcional</span></label>
+          <textarea class="form-input form-textarea" [(ngModel)]="descripcion" maxlength="150" rows="2" placeholder="Notas del pedido"></textarea>
+          <span class="char-count">{{ descripcion.length }}/150</span>
+        </div>
+
+        <div class="alert alert-error" *ngIf="error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{{ error }}</span>
+        </div>
+
+        <button class="btn-primary btn-block" (click)="save()" [disabled]="saving">
+          <span class="spinner spinner-sm spinner-light" *ngIf="saving"></span>
+          {{ saving ? 'Guardando lote…' : 'Guardar lote' }}
+        </button>
+        <a class="btn-secondary btn-block" routerLink="/purchases">Cancelar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CREAR PRODUCTO / VARIANTE ═══ -->
+<app-product-quick-create
+  *ngIf="showQuickCreate"
+  [initialName]="quickCreateName"
+  (created)="onQuickCreated($event)"
+  (closed)="showQuickCreate = false">
+</app-product-quick-create>
+
+<!-- ═══ NUEVO PROVEEDOR ═══ -->
+<div class="modal-overlay" *ngIf="showSupplierModal" (click)="showSupplierModal = supplierSaving">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Nuevo Proveedor</h3>
+      <button class="modal-close" (click)="showSupplierModal = false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre <span class="form-required">*</span></label>
+        <input class="form-input" [(ngModel)]="supplierForm.nombre" maxlength="100" (keydown.enter)="saveSupplier()" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Documento</label>
+          <input class="form-input" [(ngModel)]="supplierForm.documento" maxlength="30" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-input" [(ngModel)]="supplierForm.telefono" maxlength="20" />
+        </div>
+      </div>
+      <div class="alert alert-error" *ngIf="supplierError">{{ supplierError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showSupplierModal = false">Cancelar</button>
+      <button class="btn-primary" (click)="saveSupplier()" [disabled]="supplierSaving">{{ supplierSaving ? 'Guardando…' : 'Crear' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOTE GUARDADO ═══ -->
+<div class="modal-overlay" *ngIf="saved">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-success">
+      <h3 class="modal-title">Lote registrado</h3>
+    </div>
+    <div class="modal-body delete-body">
+      <div class="success-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="saved-code">{{ saved.codigo || ('#' + saved.id) }}</div>
+      <p class="delete-text">
+        {{ saved.nombre || 'Compra' }} a <strong>{{ saved.proveedorNombre }}</strong><br/>
+        {{ saved.totalUnidades }} prendas · Total <strong>{{ saved.total | cop }}</strong>
+      </p>
+      <span class="form-hint">Usa este código para identificar las prendas del lote al vender.</span>
+    </div>
+    <div class="modal-footer saved-footer">
+      <button class="btn-secondary" (click)="resetForm()">Registrar otro</button>
+      <button class="btn-secondary" (click)="goToPurchase()">Ver compra</button>
+      <button class="btn-primary" (click)="goToLot()">Ver rentabilidad</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+a.btn-add, a.btn-primary { text-decoration: none; }
+
+.annulled-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--mid-metal);
+  cursor: pointer;
+}
+
+.totals-right { align-self: flex-end; min-width: 300px; }

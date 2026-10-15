@@ -1,207 +1,157 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DailySaleService } from '../../core/services/daily-sale.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { SaleService } from '../../core/services/sale.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DailySaleRequest, DailySaleResponse, VentaMensualResumen } from '../../core/models/daily-sale.model';
+import { SaleResponse, VentaMensualResumen, estadoPagoClass } from '../../core/models/sale.model';
+import { isAnulado } from '../../core/models/common.model';
+import { parseApiError } from '../../core/utils/api-error';
+import { CopPipe } from '../../shared/pipes/cop.pipe';
+import { FechaCoPipe } from '../../shared/pipes/fecha-co.pipe';
+import { SaleDetailModalComponent } from '../../shared/components/sale-detail-modal/sale-detail-modal.component';
 
 @Component({
   selector: 'app-sales',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, CopPipe, FechaCoPipe, SaleDetailModalComponent],
   templateUrl: './sales.component.html',
-  styleUrl: './sales.component.css'
+  styleUrls: ['../../shared/styles/gz-ui.css', './sales.component.css'],
 })
 export class SalesComponent implements OnInit {
-  sales: DailySaleResponse[] = [];
-  filteredSales: DailySaleResponse[] = [];
-  resumenMensual: VentaMensualResumen | null = null;
-  loadingResumen = true;
+  private readonly saleService = inject(SaleService);
+  private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly isAdmin = this.auth.isAdmin();
+  readonly isAnulado = isAnulado;
+  readonly estadoPagoClass = estadoPagoClass;
+  sales: SaleResponse[] = [];
+  filtered: SaleResponse[] = [];
 
   searchTerm = '';
-  dateFrom = '';
-  dateTo = '';
+  desde = '';
+  hasta = '';
+  soloPendientes = false;
+  showAnnulled = true;
+
   loading = true;
   error = '';
 
-  showModal = false;
-  showDeleteModal = false;
-  editingSale: DailySaleResponse | null = null;
-  deletingSale: DailySaleResponse | null = null;
-  saving = false;
+  resumen: VentaMensualResumen | null = null;
 
-  form: DailySaleRequest = {
-    fecha: this.todayIso(),
-    total: 0,
-    descripcion: null,
-    usuarioId: null,
-  };
-
-  constructor(
-    private saleService: DailySaleService,
-    private auth: AuthService,
-  ) {}
+  detailId: number | null = null;
+  detailPay = false;
 
   ngOnInit(): void {
-    this.loadSales();
-    this.loadResumenMensual();
+    this.loadResumen();
+    const q = this.route.snapshot.queryParamMap;
+    if (q.get('pendientes') === '1') this.soloPendientes = true;
+    this.load();
+    this.route.queryParamMap.subscribe(params => {
+      const ver = params.get('ver');
+      if (ver) this.openDetail(Number(ver));
+    });
   }
 
-  loadSales(): void {
+  loadResumen(): void {
+    this.saleService.getResumenMensual().subscribe({ next: (r) => (this.resumen = r), error: () => {} });
+  }
+
+  load(): void {
     this.loading = true;
     this.error = '';
-    this.saleService.getAll().subscribe({
+    this.saleService.getAll({ desde: this.desde, hasta: this.hasta, soloPendientes: this.soloPendientes }).subscribe({
       next: (data) => {
-        this.sales = data.sort(
-          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-        );
+        this.sales = data;
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Error al cargar las ventas';
+      error: (err) => {
+        this.error = parseApiError(err, 'Error al cargar las ventas').message;
         this.loading = false;
-      }
+      },
     });
   }
 
   applyFilters(): void {
-    let result = [...this.sales];
-
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(s =>
-        (s.descripcion ?? '').toLowerCase().includes(term) ||
-        (s.usuarioNombre ?? '').toLowerCase().includes(term)
-      );
-    }
-
-    if (this.dateFrom) {
-      result = result.filter(s => s.fecha >= this.dateFrom);
-    }
-
-    if (this.dateTo) {
-      result = result.filter(s => s.fecha <= this.dateTo);
-    }
-
-    this.filteredSales = result;
+    const term = this.searchTerm.trim().toLowerCase();
+    this.filtered = this.sales.filter(s => {
+      if (!this.showAnnulled && isAnulado(s.estado)) return false;
+      if (!term) return true;
+      const text = [
+        `#${s.id}`, s.clienteNombre, s.usuarioNombre, s.descripcion,
+        ...s.detalles.map(d => `${d.productoNombre} ${d.varianteNombre}`),
+      ].join(' ').toLowerCase();
+      return text.includes(term);
+    });
   }
 
-  onSearchChange(): void { this.applyFilters(); }
-  onDateChange(): void   { this.applyFilters(); }
+  togglePendientes(): void {
+    this.soloPendientes = !this.soloPendientes;
+    this.load();
+  }
 
-  clearDateFilter(): void {
-    this.dateFrom = '';
-    this.dateTo = '';
+  clearDates(): void {
+    this.desde = '';
+    this.hasta = '';
+    this.load();
+  }
+
+  /* ── Totales (sin anuladas) ─── */
+  get active(): SaleResponse[] {
+    return this.filtered.filter(s => !isAnulado(s.estado));
+  }
+
+  get totalVendido(): number {
+    return this.active.reduce((sum, s) => sum + s.total, 0);
+  }
+
+  get totalCobrado(): number {
+    return this.active.reduce((sum, s) => sum + s.montoPagado, 0);
+  }
+
+  get totalPorCobrar(): number {
+    return this.active.reduce((sum, s) => sum + s.saldoPendiente, 0);
+  }
+
+  get totalGanancia(): number {
+    return this.active.reduce((sum, s) => sum + s.ganancia, 0);
+  }
+
+  get annulledCount(): number {
+    return this.sales.filter(s => isAnulado(s.estado)).length;
+  }
+
+  unidades(s: SaleResponse): number {
+    return s.detalles.reduce((sum, d) => sum + d.cantidad, 0);
+  }
+
+  /** Nombre corto para la tabla (máx. 20 caracteres). */
+  truncateName(name: string, max = 20): string {
+    const t = (name ?? '').trim();
+    if (t.length <= max) return t;
+    return `${t.slice(0, max)}…`;
+  }
+
+  /* ── Detalle ─── */
+  openDetail(id: number, pay = false, event?: Event): void {
+    event?.stopPropagation();
+    this.detailId = id;
+    this.detailPay = pay;
+  }
+
+  closeDetail(): void {
+    this.detailId = null;
+    if (this.route.snapshot.queryParamMap.get('ver')) {
+      this.router.navigate([], { queryParams: { ver: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    }
+  }
+
+  onSaleChanged(updated: SaleResponse): void {
+    this.sales = this.sales.map(s => (s.id === updated.id ? updated : s));
     this.applyFilters();
-  }
-
-  loadResumenMensual(): void {
-    this.loadingResumen = true;
-    this.saleService.getResumenMensual().subscribe({
-      next: (data) => { this.resumenMensual = data; this.loadingResumen = false; },
-      error: () => { this.loadingResumen = false; }
-    });
-  }
-
-  /* ── Stats ─── */
-  get totalSales(): number { return this.sales.length; }
-
-  get totalRevenue(): number {
-    return this.filteredSales.reduce((acc, s) => acc + s.total, 0);
-  }
-
-  get avgSale(): number {
-    if (this.filteredSales.length === 0) return 0;
-    return this.totalRevenue / this.filteredSales.length;
-  }
-
-  get bestSale(): number {
-    if (this.filteredSales.length === 0) return 0;
-    return Math.max(...this.filteredSales.map(s => s.total));
-  }
-
-  /* ── Modal ─── */
-  openCreateModal(): void {
-    this.editingSale = null;
-    const user = this.auth.currentUser();
-    this.form = {
-      fecha: this.todayIso(),
-      total: 0,
-      descripcion: null,
-      usuarioId: user?.id ?? null,
-    };
-    this.showModal = true;
-  }
-
-  openEditModal(sale: DailySaleResponse): void {
-    this.editingSale = sale;
-    this.form = {
-      fecha: sale.fecha,
-      total: sale.total,
-      descripcion: sale.descripcion,
-      usuarioId: sale.usuarioId,
-    };
-    this.showModal = true;
-  }
-
-  closeModal(): void {
-    this.showModal = false;
-    this.editingSale = null;
-  }
-
-  saveSale(): void {
-    if (!this.form.fecha || this.form.total < 0) return;
-
-    this.saving = true;
-
-    if (this.editingSale) {
-      this.saleService.update(this.editingSale.id, this.form).subscribe({
-        next: () => { this.saving = false; this.closeModal(); this.loadSales(); },
-        error: () => { this.saving = false; this.error = 'Error al actualizar la venta'; }
-      });
-    } else {
-      this.saleService.create(this.form).subscribe({
-        next: () => { this.saving = false; this.closeModal(); this.loadSales(); },
-        error: () => { this.saving = false; this.error = 'Error al registrar la venta'; }
-      });
-    }
-  }
-
-  openDeleteModal(sale: DailySaleResponse): void {
-    this.deletingSale = sale;
-    this.showDeleteModal = true;
-  }
-
-  closeDeleteModal(): void {
-    this.showDeleteModal = false;
-    this.deletingSale = null;
-  }
-
-  confirmDelete(): void {
-    if (!this.deletingSale) return;
-    this.saleService.delete(this.deletingSale.id).subscribe({
-      next: () => { this.closeDeleteModal(); this.loadSales(); },
-      error: () => { this.error = 'Error al eliminar la venta'; this.closeDeleteModal(); }
-    });
-  }
-
-  /* ── Helpers ─── */
-  private todayIso(): string {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  getUserInitials(nombre: string | null): string {
-    if (!nombre) return '?';
-    return nombre.split(' ').slice(0, 2).map(w => w[0].toUpperCase()).join('');
-  }
-
-  formatCurrency(value: number): string {
-    return '$' + value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
-  }
-
-  getSaleBarPercent(sale: DailySaleResponse): number {
-    const max = Math.max(...this.filteredSales.map(s => s.total), 1);
-    return Math.min((sale.total / max) * 100, 100);
+    this.loadResumen();
   }
 }

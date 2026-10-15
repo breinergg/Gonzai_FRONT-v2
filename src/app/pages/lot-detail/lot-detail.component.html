@@ -1,0 +1,176 @@
+<!-- Loading / error -->
+<div class="table-card section-card" *ngIf="loading || (error && !lot)">
+  <div class="table-loading" *ngIf="loading"><div class="spinner"></div><span>Cargando lote...</span></div>
+  <div class="table-error" *ngIf="!loading && error">
+    <span>{{ error }}</span>
+    <div class="error-actions">
+      <button class="btn-retry" (click)="load()">Reintentar</button>
+      <button class="btn-light" (click)="back()">Volver a lotes</button>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="!loading && lot as l">
+  <!-- ═══ ENCABEZADO + KPIs ═══ -->
+  <div class="table-card section-card">
+    <div class="table-header">
+      <div class="table-header-left">
+        <button class="btn-back" (click)="back()" title="Volver">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="table-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="title-stack">
+          <h3 class="table-header-title">{{ l.codigo || ('Lote #' + l.compraProveedorId) }} · {{ l.nombre || 'Sin nombre' }}</h3>
+          <span class="table-header-sub">
+            {{ l.proveedorNombre }} · {{ l.fecha | fechaCo }}<ng-container *ngIf="l.numeroFactura"> · Factura {{ l.numeroFactura }}</ng-container>
+          </span>
+        </div>
+      </div>
+      <div class="table-header-actions">
+        <span class="status-badge doc-anulada" *ngIf="isAnulado(l.estado)">Anulado</span>
+        <ng-container *ngIf="!isAnulado(l.estado)">
+          <span class="status-badge status-active" *ngIf="l.inversionRecuperada">Inversión recuperada</span>
+          <span class="status-badge pay-parcial" *ngIf="!l.inversionRecuperada">{{ pct(l.porcentajeRecuperado) }} % recuperado</span>
+        </ng-container>
+        <a class="btn-add" [routerLink]="['/purchases']" [queryParams]="{ ver: l.compraProveedorId }">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          Ver compra
+        </a>
+      </div>
+    </div>
+
+    <div class="section-body">
+      <div class="alert alert-warn" *ngIf="isAnulado(l.estado)">Este lote fue anulado: sus valores no suman en los totales.</div>
+      <p class="lot-desc" *ngIf="l.descripcion">{{ l.descripcion }}</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Inversión en prendas</span>
+          <span class="kpi-value">{{ l.subtotalProductos | cop }}</span>
+          <span class="kpi-sub">{{ l.unidadesCompradas }} prendas compradas</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Envío</span>
+          <span class="kpi-value">{{ l.costoEnvio | cop }}</span>
+          <span class="kpi-sub">Inversión total {{ l.inversionTotal | cop }}</span>
+        </div>
+        <div class="kpi-card kpi-gold">
+          <span class="kpi-label">Ingresos <span class="info-tip" [title]="ingresosTooltip">i</span></span>
+          <span class="kpi-value">{{ l.ingresos | cop }}</span>
+          <span class="kpi-sub">Valor vendido, no lo cobrado</span>
+        </div>
+        <div class="kpi-card" [class.kpi-ok]="l.gananciaBruta > 0" [class.kpi-bad]="l.gananciaBruta < 0">
+          <span class="kpi-label">Ganancia bruta</span>
+          <span class="kpi-value">{{ l.gananciaBruta | cop }}</span>
+          <span class="kpi-sub">Ingresos − costo vendido ({{ l.costoVendido | cop }})</span>
+        </div>
+        <div class="kpi-card kpi-dark" [class.kpi-ok]="l.gananciaNeta >= 0" [class.kpi-bad]="l.gananciaNeta < 0">
+          <span class="kpi-label">Ganancia neta</span>
+          <span class="kpi-value">{{ l.gananciaNeta | cop }}</span>
+          <span class="kpi-sub">Ganancia bruta − envío</span>
+        </div>
+      </div>
+
+      <div class="lot-progress-grid">
+        <div class="lot-progress-box">
+          <div class="lot-progress-head">
+            <span>Prendas vendidas</span>
+            <span class="lot-progress-num">{{ pct(l.porcentajeVendido) }} %</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill bar-gold" [style.width.%]="pct(l.porcentajeVendido)"></div></div>
+          <div class="lot-progress-foot">
+            <span>{{ l.unidadesVendidas }} vendidas</span>
+            <span>{{ l.unidadesDisponibles }} disponibles</span>
+            <span *ngIf="l.unidadesAjustadas">{{ l.unidadesAjustadas }} ajustadas</span>
+          </div>
+        </div>
+        <div class="lot-progress-box">
+          <div class="lot-progress-head">
+            <span>Inversión recuperada</span>
+            <span class="lot-progress-num">{{ pct(l.porcentajeRecuperado) }} %</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" [ngClass]="l.inversionRecuperada ? 'bar-ok' : 'bar-low'" [style.width.%]="pct(l.porcentajeRecuperado)"></div></div>
+          <div class="lot-progress-foot">
+            <span>{{ l.ingresos | cop }} de {{ l.inversionTotal | cop }}</span>
+            <span>Inventario restante {{ l.valorInventarioDisponible | cop }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RENTABILIDAD POR PRENDA ═══ -->
+  <div class="table-card section-card">
+    <div class="table-header">
+      <div class="table-header-left">
+        <div class="table-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
+        </div>
+        <h3 class="table-header-title">Rentabilidad por prenda</h3>
+        <div class="header-stats">
+          <span class="header-stat"><span class="header-stat-num">{{ l.lineas.length }}</span> líneas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-empty empty-sm" *ngIf="!l.lineas.length">
+      <span class="empty-text">Este lote no tiene prendas.</span>
+    </div>
+
+    <div class="table-wrap" *ngIf="l.lineas.length">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Prenda</th>
+            <th class="th-num">Costo unit.</th>
+            <th class="th-num">Compradas</th>
+            <th>Vendidas</th>
+            <th class="th-num">Disponibles</th>
+            <th class="th-num hide-sm">Ajustadas</th>
+            <th class="th-num">Ingresos <span class="info-tip" [title]="ingresosTooltip">i</span></th>
+            <th class="th-num hide-sm">Costo vendido</th>
+            <th class="th-num">Ganancia bruta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ln of l.lineas" class="table-row">
+            <td>
+              <div class="product-info">
+                <a class="product-name lot-link" [routerLink]="['/products', ln.productoId]">{{ ln.productoNombre }}</a>
+                <span class="product-date">{{ ln.varianteNombre || 'Única' }}</span>
+              </div>
+            </td>
+            <td class="td-num price-cell">{{ ln.costoUnitario | cop }}</td>
+            <td class="td-num">{{ ln.comprado }}</td>
+            <td>
+              <div class="stock-cell">
+                <div class="stock-bar-wrap"><div class="stock-bar" [ngClass]="lineBarClass(ln)" [style.width.%]="lineSoldPct(ln)"></div></div>
+                <span class="stock-num">{{ ln.vendido }}</span>
+              </div>
+            </td>
+            <td class="td-num" [class.price-bad]="ln.disponible === 0">{{ ln.disponible }}</td>
+            <td class="td-num hide-sm">{{ ln.ajustado || '—' }}</td>
+            <td class="td-num price-cell">{{ ln.ingresos | cop }}</td>
+            <td class="td-num price-cell hide-sm">{{ ln.costoVendido | cop }}</td>
+            <td class="td-num price-cell" [class.price-ok]="ln.gananciaBruta > 0" [class.price-bad]="ln.gananciaBruta < 0">{{ ln.gananciaBruta | cop }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td></td>
+            <td class="td-num">{{ totals.comprado }}</td>
+            <td>{{ totals.vendido }}</td>
+            <td class="td-num">{{ totals.disponible }}</td>
+            <td class="td-num hide-sm">{{ totals.ajustado || '—' }}</td>
+            <td class="td-num">{{ totals.ingresos | cop }}</td>
+            <td class="td-num hide-sm">{{ totals.costoVendido | cop }}</td>
+            <td class="td-num">{{ totals.gananciaBruta | cop }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</ng-container>

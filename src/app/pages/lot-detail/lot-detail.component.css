@@ -1,0 +1,50 @@
+a.btn-add { text-decoration: none; }
+
+.title-stack { display: flex; flex-direction: column; min-width: 0; }
+.error-actions { display: flex; gap: 0.5rem; }
+
+.lot-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--mid-metal);
+}
+
+.lot-progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.lot-progress-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.8rem 1rem;
+  background: var(--white-matte);
+  border: 1px solid #E0E0E0;
+  border-radius: 14px;
+}
+
+.lot-progress-head,
+.lot-progress-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--mid-metal);
+}
+
+.lot-progress-head { font-weight: 600; color: var(--black-deep); }
+
+.lot-progress-num {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.lot-link { text-decoration: none; }
+.lot-link:hover { text-decoration: underline; }
+
+@media (max-width: 760px) {
+  .lot-progress-grid { grid-template-columns: 1fr; }
+}

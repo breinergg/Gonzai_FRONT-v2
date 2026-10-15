@@ -1,0 +1,11 @@
+:host {
+  display: contents;
+  padding: 0;
+  animation: none;
+}
+
+.sale-kpis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+.lots-cell { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+
+a.link-cell { text-decoration: underline; text-underline-offset: 2px; }

@@ -1,0 +1,73 @@
+:host {
+  display: contents;
+  padding: 0;
+  animation: none;
+}
+
+.category-select-wrap { display: flex; gap: 0.4rem; align-items: center; }
+.category-select-wrap .form-input { flex: 1; min-width: 0; }
+
+.btn-add-category {
+  width: 36px; height: 36px;
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #2a2a2a 0%, #111111 50%, #2c2c2c 100%);
+  color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 4px 12px rgba(0,0,0,0.25);
+  transition: transform 0.12s, box-shadow 0.18s;
+}
+
+.btn-add-category:hover { transform: translateY(-1px); color: var(--white-pure); }
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--black-deep);
+  cursor: pointer;
+}
+
+.toggle-text small { font-size: 0.68rem; font-weight: 500; color: var(--silver); }
+
+.combo-preview {
+  border: 1px solid #ECECEC;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  background: #FAFAFB;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.combo-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.combo-cost { display: flex; align-items: center; gap: 0.5rem; }
+.combo-cost .currency-wrap { width: 120px; }
+
+.combo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.4rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.combo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.6rem;
+  background: var(--white-pure);
+  border: 1px solid #E8E8E8;
+  border-radius: 9px;
+  min-height: 30px;
+}
+
+.combo-name { font-size: 0.72rem; font-weight: 600; color: var(--black-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.combo-qty { width: 64px; }

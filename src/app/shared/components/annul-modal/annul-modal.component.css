@@ -1,0 +1,12 @@
+:host {
+  display: contents;
+  padding: 0;
+  animation: none;
+}
+
+.motivo-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}

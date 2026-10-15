@@ -1,0 +1,235 @@
+<div class="table-card">
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Compras / Lotes</h3>
+      <div class="header-stats">
+        <span class="header-stat"><span class="header-stat-num">{{ active.length }}</span> compras</span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-revenue"><span class="header-stat-num">{{ totalInvertido | cop }}</span> invertido</span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Código, nombre, factura…" [(ngModel)]="searchTerm" (input)="applyFilters()" />
+      </div>
+      <select class="table-filter" [(ngModel)]="proveedorId" (change)="load()">
+        <option [ngValue]="null">Todos los proveedores</option>
+        <option *ngFor="let s of suppliers" [ngValue]="s.id">{{ s.nombre }}</option>
+      </select>
+      <div class="date-range-wrap">
+        <input type="date" class="date-input" [(ngModel)]="desde" (change)="load()" title="Desde" />
+        <span class="date-range-sep">—</span>
+        <input type="date" class="date-input" [(ngModel)]="hasta" (change)="load()" title="Hasta" />
+        <button class="date-clear-btn" *ngIf="desde || hasta" (click)="clearDates()" title="Limpiar fechas">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <a class="btn-add" routerLink="/purchases/new">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo Lote
+      </a>
+    </div>
+  </div>
+
+  <div class="summary-bar" *ngIf="!loading && !error && purchases.length">
+    <div class="summary-item">
+      <span class="summary-label">Total invertido</span>
+      <span class="summary-value summary-total">{{ totalInvertido | cop }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-label">Prendas compradas</span>
+      <span class="summary-value">{{ totalUnidades }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-label">Costo de envíos</span>
+      <span class="summary-value">{{ totalEnvio | cop }}</span>
+    </div>
+    <div class="summary-divider" *ngIf="annulledCount"></div>
+    <div class="summary-item" *ngIf="annulledCount">
+      <span class="summary-label">Anuladas</span>
+      <label class="annulled-toggle">
+        <input type="checkbox" [(ngModel)]="showAnnulled" (change)="applyFilters()" />
+        <span>{{ annulledCount }} · mostrar</span>
+      </label>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="table-loading"><div class="spinner"></div><span>Cargando compras...</span></div>
+
+  <div *ngIf="error && !loading" class="table-error">
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="load()">Reintentar</button>
+  </div>
+
+  <div *ngIf="!loading && !error && filtered.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+    </svg>
+    <span class="empty-title">No hay compras</span>
+    <span class="empty-text">{{ purchases.length ? 'No hay resultados con los filtros aplicados' : 'Registra tu primer lote de compra a un proveedor' }}</span>
+  </div>
+
+  <div class="table-wrap" *ngIf="!loading && !error && filtered.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Lote</th>
+          <th>Proveedor</th>
+          <th>Fecha</th>
+          <th class="th-num">Prendas</th>
+          <th class="th-num">Envío</th>
+          <th class="th-num">Total</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of filtered" class="table-row row-clickable" [class.row-annulled]="isAnulado(p.estado)" (click)="openDetail(p.id)">
+          <td><span class="code-badge" [class.strike]="isAnulado(p.estado)">{{ p.codigo || ('#' + p.id) }}</span></td>
+          <td>
+            <div class="product-info">
+              <span class="product-name">{{ p.nombre || 'Compra sin nombre' }}</span>
+              <span class="product-date">{{ p.numeroFactura ? 'Factura ' + p.numeroFactura : 'Sin factura' }}</span>
+            </div>
+          </td>
+          <td><span class="user-name">{{ p.proveedorNombre }}</span></td>
+          <td>
+            <div class="date-cell">
+              <span class="date-main">{{ p.fecha | fechaCo }}</span>
+              <span class="date-time">{{ p.fecha | fechaCo:'time' }}</span>
+            </div>
+          </td>
+          <td class="td-num"><span class="stock-num">{{ p.totalUnidades }}</span></td>
+          <td class="td-num price-cell">{{ p.costoEnvio | cop }}</td>
+          <td class="td-num total-cell">{{ p.total | cop }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="isAnulado(p.estado) ? 'doc-anulada' : 'status-active'" [title]="p.motivoAnulacion || ''">{{ p.estado }}</span>
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn action-view" (click)="openDetail(p.id); $event.stopPropagation()" title="Ver detalle">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <a class="action-btn action-pay" [routerLink]="['/lots', p.id]" (click)="$event.stopPropagation()" title="Ver rentabilidad del lote">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </a>
+              <button class="action-btn action-delete" *ngIf="isAdmin && !isAnulado(p.estado)" (click)="openAnnul(p, $event)" title="Anular compra">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer" *ngIf="!loading && !error && filtered.length > 0">
+    <span class="table-count">{{ filtered.length }} de {{ purchases.length }} compras</span>
+  </div>
+</div>
+
+<!-- ═══ DETALLE ═══ -->
+<div class="modal-overlay" *ngIf="detail" (click)="closeDetail()">
+  <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class.modal-header-danger]="isAnulado(detail.estado)">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+        </div>
+        <div>
+          <span class="modal-title">{{ detail.codigo || ('Compra #' + detail.id) }} {{ detail.nombre ? '· ' + detail.nombre : '' }}</span>
+          <span class="modal-subtitle" *ngIf="detail.proveedorNombre">{{ detail.proveedorNombre }} · {{ detail.fecha | fechaCo:'datetime' }}</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeDetail()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="table-loading" *ngIf="detailLoading && !detail.detalles"><div class="spinner"></div></div>
+      <div class="alert alert-error" *ngIf="detailError">{{ detailError }}</div>
+
+      <ng-container *ngIf="detail.detalles">
+        <div class="alert alert-error" *ngIf="isAnulado(detail.estado)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span>Compra anulada el {{ detail.fechaAnulacion | fechaCo:'datetime' }}. Motivo: <strong>{{ detail.motivoAnulacion }}</strong></span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Proveedor</span><span class="detail-value">{{ detail.proveedorNombre }}</span></div>
+          <div class="detail-item"><span class="detail-label">Factura</span><span class="detail-value">{{ detail.numeroFactura || '—' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Registró</span><span class="detail-value">{{ detail.usuarioNombre }}</span></div>
+          <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value"><span class="status-badge" [ngClass]="isAnulado(detail.estado) ? 'doc-anulada' : 'status-active'">{{ detail.estado }}</span></span></div>
+          <div class="detail-item" *ngIf="detail.descripcion"><span class="detail-label">Descripción</span><span class="detail-value">{{ detail.descripcion }}</span></div>
+        </div>
+
+        <div class="inner-table-wrap">
+          <table class="data-table table-compact">
+            <thead>
+              <tr>
+                <th>Prenda</th>
+                <th class="th-num">Cantidad</th>
+                <th class="th-num">Costo unit.</th>
+                <th class="th-num">Subtotal</th>
+                <th class="th-num">Disponible</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of detail.detalles" class="table-row">
+                <td>
+                  <div class="product-info">
+                    <span class="product-name">{{ d.productoNombre }}</span>
+                    <span class="product-date">{{ d.varianteNombre }}</span>
+                  </div>
+                </td>
+                <td class="td-num"><span class="stock-num">{{ d.cantidad }}</span></td>
+                <td class="td-num price-cell">{{ d.costoUnitario | cop }}</td>
+                <td class="td-num price-cell price-venta">{{ d.subtotal | cop }}</td>
+                <td class="td-num"><span class="stock-num">{{ d.cantidadDisponible ?? '—' }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals-box totals-right">
+          <div class="totals-row"><span>Subtotal prendas ({{ detail.totalUnidades }})</span><strong>{{ detail.subtotalProductos | cop }}</strong></div>
+          <div class="totals-row"><span>Costo de envío</span><strong>{{ detail.costoEnvio | cop }}</strong></div>
+          <div class="totals-row totals-grand"><span>Total</span><strong [class.strike]="isAnulado(detail.estado)">{{ detail.total | cop }}</strong></div>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-outline-danger modal-footer-left" *ngIf="isAdmin && detail.detalles && !isAnulado(detail.estado)" (click)="openAnnul(detail)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Anular compra
+      </button>
+      <button class="btn-secondary" (click)="closeDetail()">Cerrar</button>
+      <a class="btn-primary" [routerLink]="['/lots', detail.id]">Ver rentabilidad</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ANULAR ═══ -->
+<app-annul-modal
+  *ngIf="annulTarget"
+  title="Anular compra"
+  [subject]="purchaseTitle(annulTarget)"
+  warning="Se retirará del inventario el stock que entró con esta compra. No se puede anular si ya se vendió alguna prenda del lote."
+  [loading]="annulling"
+  [error]="annulError"
+  (confirmed)="confirmAnnul($event)"
+  (cancelled)="annulTarget = null">
+</app-annul-modal>

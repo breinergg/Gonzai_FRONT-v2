@@ -1,0 +1,174 @@
+<div class="table-card">
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Proveedores</h3>
+      <div class="header-stats">
+        <span class="header-stat"><span class="header-stat-num">{{ activeCount }}</span> activos</span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat"><span class="header-stat-num">{{ suppliers.length }}</span> total</span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Buscar proveedor..." [(ngModel)]="searchTerm" (input)="applyFilters()" />
+      </div>
+      <select class="table-filter" [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <option value="activos">Activos</option>
+        <option value="todos">Todos</option>
+      </select>
+      <button class="btn-add" (click)="openCreate()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo Proveedor
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="table-loading"><div class="spinner"></div><span>Cargando proveedores...</span></div>
+
+  <div *ngIf="error && !loading" class="table-error">
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="load()">Reintentar</button>
+  </div>
+
+  <div *ngIf="!loading && !error && filtered.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+      <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+    </svg>
+    <span class="empty-title">No hay proveedores</span>
+    <span class="empty-text">{{ suppliers.length ? 'No hay resultados con los filtros aplicados' : 'Registra tu primer proveedor para crear lotes de compra' }}</span>
+  </div>
+
+  <div class="table-wrap" *ngIf="!loading && !error && filtered.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Proveedor</th>
+          <th>Documento</th>
+          <th>Teléfono</th>
+          <th class="hide-sm">Dirección</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of filtered" class="table-row">
+          <td>
+            <div class="product-cell">
+              <div class="product-avatar">{{ initials(s.nombre) }}</div>
+              <div class="product-info">
+                <span class="product-name">{{ s.nombre }}</span>
+                <span class="product-date">Desde {{ s.fechaCreacion | fechaCo }}</span>
+              </div>
+            </div>
+          </td>
+          <td><span [class.cell-empty]="!s.documento">{{ s.documento || '—' }}</span></td>
+          <td><span [class.cell-empty]="!s.telefono">{{ s.telefono || '—' }}</span></td>
+          <td class="hide-sm"><span class="desc-cell" [class.cell-empty]="!s.direccion">{{ s.direccion || '—' }}</span></td>
+          <td><span class="status-badge" [ngClass]="s.activo ? 'status-active' : 'status-inactive'">{{ s.activo ? 'Activo' : 'Inactivo' }}</span></td>
+          <td>
+            <div class="action-btns">
+              <a class="action-btn action-view" [routerLink]="['/purchases']" [queryParams]="{ proveedor: s.id }" title="Ver compras">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+              </a>
+              <button class="action-btn action-edit" (click)="openEdit(s)" title="Editar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="action-btn action-delete" *ngIf="s.activo" (click)="openDelete(s)" title="Desactivar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer" *ngIf="!loading && !error && filtered.length > 0">
+    <span class="table-count">{{ filtered.length }} de {{ suppliers.length }} proveedores</span>
+  </div>
+</div>
+
+<!-- CREATE / EDIT -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ editing ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h3>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre <span class="form-required">*</span></label>
+        <input class="form-input" [class.input-invalid]="fieldErrors['nombre']" [(ngModel)]="form.nombre" maxlength="100" placeholder="Ej: Textiles Medellín" (keydown.enter)="save()" />
+        <span class="field-error" *ngIf="fieldErrors['nombre']">{{ fieldErrors['nombre'] }}</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Documento <span class="form-optional">NIT / CC</span></label>
+          <input class="form-input" [(ngModel)]="form.documento" maxlength="30" placeholder="900123456-7" />
+          <span class="field-error" *ngIf="fieldErrors['documento']">{{ fieldErrors['documento'] }}</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono <span class="form-optional">opcional</span></label>
+          <input class="form-input" [(ngModel)]="form.telefono" maxlength="20" placeholder="300 123 4567" />
+          <span class="field-error" *ngIf="fieldErrors['telefono']">{{ fieldErrors['telefono'] }}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección <span class="form-optional">opcional</span></label>
+        <input class="form-input" [(ngModel)]="form.direccion" maxlength="150" placeholder="Calle, ciudad" />
+        <span class="field-error" *ngIf="fieldErrors['direccion']">{{ fieldErrors['direccion'] }}</span>
+      </div>
+      <label class="form-group form-toggle-group" *ngIf="editing">
+        <span class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="form.activo" />
+          <span class="toggle-slider"></span>
+        </span>
+        <span class="form-label">{{ form.activo ? 'Activo' : 'Inactivo' }}</span>
+      </label>
+      <div class="alert alert-error" *ngIf="formError">{{ formError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando…' : (editing ? 'Actualizar' : 'Crear Proveedor') }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEACTIVATE -->
+<div class="modal-overlay" *ngIf="deleting" (click)="deleting = deletingBusy ? deleting : null">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-danger">
+      <h3 class="modal-title">Desactivar Proveedor</h3>
+      <button class="modal-close" (click)="deleting = null">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body delete-body">
+      <div class="delete-icon-wrap">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <p class="delete-text">¿Desactivar a <strong>{{ deleting.nombre }}</strong>?<br/>Su historial de compras se conserva.</p>
+      <div class="alert alert-error" *ngIf="deleteError">{{ deleteError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="deleting = null">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()" [disabled]="deletingBusy">{{ deletingBusy ? 'Desactivando…' : 'Desactivar' }}</button>
+    </div>
+  </div>
+</div>

@@ -1,49 +1,45 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ClientService } from '../../core/services/client.service';
-import { ClientCreateRequest, ClientUpdateRequest, ClientMovementCreateRequest, ClienteSaldoDto, ClientRequest, ClientResponse } from '../../core/models/client.model';
+import { ClienteSaldo, ClientResponse } from '../../core/models/client.model';
+import { parseApiError } from '../../core/utils/api-error';
+import { formatCOP, initials } from '../../core/utils/format';
+import { CopPipe } from '../../shared/pipes/cop.pipe';
 
 @Component({
   selector: 'app-clients',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, CopPipe],
   templateUrl: './clients.component.html',
-  styleUrl: './clients.component.css'
+  styleUrls: ['../../shared/styles/gz-ui.css', './clients.component.css'],
 })
 export class ClientsComponent implements OnInit {
+  private readonly clientService = inject(ClientService);
+  private readonly router = inject(Router);
+
+  readonly initials = initials;
+
   clients: ClientResponse[] = [];
   filteredClients: ClientResponse[] = [];
-  saldos = new Map<number, ClienteSaldoDto>();
+  saldos = new Map<number, ClienteSaldo>();
   searchTerm = '';
-  statusFilter: string = '';
+  statusFilter: '' | 'activo' | 'inactivo' = 'activo';
+  debtFilter = false;
   loading = true;
   error = '';
 
   showModal = false;
-  showDeleteModal = false;
-  showMovementModal = false;
   editingClient: ClientResponse | null = null;
-  deletingClient: ClientResponse | null = null;
+  form = { nombre: '', telefono: '', direccion: '', activo: true };
   saving = false;
+  formError = '';
+  fieldErrors: Record<string, string> = {};
 
-  movementForm: ClientMovementCreateRequest = {
-    clienteId: 0,
-    tipoMovimiento: 'deuda',
-    valor: 0,
-    descripcion: null,
-  };
-
-  form: ClientRequest = {
-    nombre: '',
-    apellido: '',
-    email: null,
-    telefono: null,
-    direccion: null,
-    activo: true,
-  };
-
-  constructor(private clientService: ClientService) {}
+  deletingClient: ClientResponse | null = null;
+  deleting = false;
+  deleteError = '';
 
   ngOnInit(): void {
     this.loadClients();
@@ -59,215 +55,142 @@ export class ClientsComponent implements OnInit {
         this.loading = false;
         data.forEach(c => {
           this.clientService.getSaldo(c.id).subscribe({
-            next: (s) => this.saldos.set(c.id, s),
-            error: () => {}
+            next: (s) => {
+              this.saldos.set(c.id, s);
+              if (this.debtFilter) this.applyFilters();
+            },
+            error: () => {},
           });
         });
       },
-      error: () => {
-        this.error = 'Error al cargar los clientes';
+      error: (err) => {
+        this.error = parseApiError(err, 'Error al cargar los clientes').message;
         this.loading = false;
-      }
+      },
     });
   }
 
   applyFilters(): void {
-    let result = [...this.clients];
-
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(c =>
-        c.nombre.toLowerCase().includes(term) ||
-        (c.apellido ?? '').toLowerCase().includes(term) ||
-        (c.email ?? '').toLowerCase().includes(term) ||
-        (c.telefono ?? '').includes(term)
-      );
-    }
-
-    if (this.statusFilter !== '') {
-      const isActive = this.statusFilter === 'activo';
-      result = result.filter(c => c.activo === isActive);
-    }
-
-    this.filteredClients = result;
+    const term = this.searchTerm.trim().toLowerCase();
+    this.filteredClients = this.clients.filter(c => {
+      if (this.statusFilter === 'activo' && !c.activo) return false;
+      if (this.statusFilter === 'inactivo' && c.activo) return false;
+      if (this.debtFilter && !((this.saldos.get(c.id)?.saldo ?? 0) > 0)) return false;
+      if (!term) return true;
+      return `${c.nombre} ${c.telefono ?? ''} ${c.direccion ?? ''}`.toLowerCase().includes(term);
+    });
   }
 
-  onSearchChange(): void {
+  toggleDebt(): void {
+    this.debtFilter = !this.debtFilter;
     this.applyFilters();
   }
 
-  onStatusChange(): void {
-    this.applyFilters();
+  openDetail(client: ClientResponse): void {
+    this.router.navigate(['/clients', client.id]);
   }
 
-  get totalClients(): number {
-    return this.clients.length;
-  }
-
-  get activeClients(): number {
-    return this.clients.filter(c => c.activo).length;
-  }
-
-  get inactiveClients(): number {
-    return this.clients.filter(c => !c.activo).length;
-  }
-
+  /* ── Crear / editar ─── */
   openCreateModal(): void {
     this.editingClient = null;
-    this.form = { nombre: '', apellido: '', email: null, telefono: null, direccion: null, activo: true };
+    this.form = { nombre: '', telefono: '', direccion: '', activo: true };
+    this.formError = '';
+    this.fieldErrors = {};
     this.showModal = true;
   }
 
-  openEditModal(client: ClientResponse): void {
+  openEditModal(client: ClientResponse, event: Event): void {
+    event.stopPropagation();
     this.editingClient = client;
     this.form = {
       nombre: client.nombre,
-      apellido: client.apellido,
-      email: client.email,
-      telefono: client.telefono,
-      direccion: client.direccion,
+      telefono: client.telefono ?? '',
+      direccion: client.direccion ?? '',
       activo: client.activo,
     };
+    this.formError = '';
+    this.fieldErrors = {};
     this.showModal = true;
   }
 
   closeModal(): void {
-    this.showModal = false;
-    this.editingClient = null;
+    if (!this.saving) this.showModal = false;
   }
 
   saveClient(): void {
-    if (!this.form.nombre.trim()) return;
-
-    this.saving = true;
-
-    if (this.editingClient) {
-      const updatePayload: ClientUpdateRequest = {
-        nombre: this.form.nombre.trim(),
-        telefono: this.form.telefono?.trim() || null,
-        direccion: this.form.direccion?.trim() || null,
-        activo: this.form.activo,
-      };
-      this.clientService.update(this.editingClient.id, updatePayload).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeModal();
-          this.loadClients();
-        },
-        error: () => {
-          this.saving = false;
-          this.error = 'Error al actualizar el cliente';
-        }
-      });
-    } else {
-      const createPayload: ClientCreateRequest = {
-        nombre: this.form.nombre.trim(),
-        telefono: this.form.telefono?.trim() || null,
-        direccion: this.form.direccion?.trim() || null,
-      };
-      this.clientService.create(createPayload).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeModal();
-          this.loadClients();
-        },
-        error: () => {
-          this.saving = false;
-          this.error = 'Error al crear el cliente';
-        }
-      });
+    if (this.saving) return;
+    this.formError = '';
+    this.fieldErrors = {};
+    if (!this.form.nombre.trim()) {
+      this.fieldErrors = { nombre: 'El nombre es obligatorio.' };
+      return;
     }
+    const base = {
+      nombre: this.form.nombre.trim(),
+      telefono: this.form.telefono.trim() || null,
+      direccion: this.form.direccion.trim() || null,
+    };
+    this.saving = true;
+    const request$ = this.editingClient
+      ? this.clientService.update(this.editingClient.id, { ...base, activo: this.form.activo })
+      : this.clientService.create(base);
+
+    request$.subscribe({
+      next: () => {
+        this.saving = false;
+        this.showModal = false;
+        this.loadClients();
+      },
+      error: (err) => {
+        const parsed = parseApiError(err, 'No se pudo guardar el cliente.');
+        this.fieldErrors = parsed.fieldErrors;
+        this.formError = parsed.message;
+        this.saving = false;
+      },
+    });
   }
 
-  openDeleteModal(client: ClientResponse): void {
+  /* ── Desactivar ─── */
+  openDeleteModal(client: ClientResponse, event: Event): void {
+    event.stopPropagation();
     this.deletingClient = client;
-    this.showDeleteModal = true;
-  }
-
-  closeDeleteModal(): void {
-    this.showDeleteModal = false;
-    this.deletingClient = null;
+    this.deleteError = '';
   }
 
   confirmDelete(): void {
     if (!this.deletingClient) return;
+    this.deleting = true;
     this.clientService.delete(this.deletingClient.id).subscribe({
       next: () => {
-        this.closeDeleteModal();
+        this.deleting = false;
+        this.deletingClient = null;
         this.loadClients();
       },
-      error: () => {
-        this.error = 'Error al eliminar el cliente';
-        this.closeDeleteModal();
-      }
+      error: (err) => {
+        this.deleteError = parseApiError(err, 'No se pudo desactivar el cliente.').message;
+        this.deleting = false;
+      },
     });
   }
 
+  /* ── Saldo ─── */
   getSaldoClass(clientId: number): string {
     const s = this.saldos.get(clientId);
     if (!s) return 'saldo-loading';
-    if (s.enPazYSalvo) return 'saldo-ok';
-    if (s.saldo > 0)   return 'saldo-deuda';
-    return 'saldo-ok';
+    return s.saldo > 0 ? 'saldo-deuda' : 'saldo-ok';
   }
 
   getSaldoLabel(clientId: number): string {
     const s = this.saldos.get(clientId);
     if (!s) return '...';
-    return `$${s.saldo.toLocaleString('es-CL', { minimumFractionDigits: 0 })}`;
+    return s.saldo > 0 ? formatCOP(s.saldo) : 'Paz y salvo';
   }
 
   getSaldoTooltip(clientId: number): string {
     const s = this.saldos.get(clientId);
     if (!s) return '';
-    return `Deuda: $${s.totalDeuda} | Abonos: $${s.totalAbonos}`;
-  }
-
-  getStatusClass(client: ClientResponse): string {
-    return client.activo ? 'status-active' : 'status-inactive';
-  }
-
-  getStatusLabel(client: ClientResponse): string {
-    return client.activo ? 'Activo' : 'Inactivo';
-  }
-
-  getInitials(client: ClientResponse): string {
-    const a = client.nombre.charAt(0);
-    const b = client.apellido?.charAt(0) ?? '';
-    return (a + b).toUpperCase();
-  }
-
-  getFullName(client: ClientResponse): string {
-    return client.apellido ? `${client.nombre} ${client.apellido}` : client.nombre;
-  }
-
-  openMovementModal(): void {
-    this.movementForm = {
-      clienteId: this.clients.find(c => c.activo)?.id ?? 0,
-      tipoMovimiento: 'deuda',
-      valor: 0,
-      descripcion: null,
-    };
-    this.showMovementModal = true;
-  }
-
-  closeMovementModal(): void {
-    this.showMovementModal = false;
-  }
-
-  saveMovement(): void {
-    if (!this.movementForm.clienteId || this.movementForm.valor <= 0) return;
-    this.saving = true;
-    this.clientService.createMovement(this.movementForm).subscribe({
-      next: () => {
-        this.saving = false;
-        this.closeMovementModal();
-        this.loadClients();
-      },
-      error: () => {
-        this.saving = false;
-        this.error = 'Error al registrar el movimiento';
-      }
-    });
+    const pend = s.ventasPendientes.length;
+    return `Comprado: ${formatCOP(s.totalComprado)} | Pagado: ${formatCOP(s.totalPagado)}` +
+      (pend ? ` | ${pend} venta${pend > 1 ? 's' : ''} pendiente${pend > 1 ? 's' : ''}` : '');
   }
 }

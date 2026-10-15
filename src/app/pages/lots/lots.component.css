@@ -1,0 +1,143 @@
+a.btn-add { text-decoration: none; }
+
+.annulled-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--mid-metal);
+  cursor: pointer;
+}
+
+.lots-alert { margin: 0.9rem 1.25rem 0; }
+
+.lots-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.1rem 1.25rem;
+}
+
+.lots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.9rem;
+}
+
+/* ── Lot card ─── */
+.lot-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem 1.05rem;
+  background: var(--white-pure);
+  border: 1px solid #E0E0E0;
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.lot-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2a2a2a, #6a6a6a, #2a2a2a);
+}
+
+.lot-card:hover,
+.lot-card:focus-visible {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  border-color: #CFCFCF;
+  outline: none;
+}
+
+.lot-annulled { opacity: 0.6; }
+.lot-annulled .lot-name,
+.lot-annulled .lot-figure-value { text-decoration: line-through; }
+
+.lot-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.lot-title { display: flex; flex-direction: column; min-width: 0; }
+
+.lot-name {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--black-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lot-meta {
+  font-size: 0.7rem;
+  color: var(--silver);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lot-progress { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.lot-progress-head,
+.lot-units {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--mid-metal);
+  font-weight: 500;
+}
+
+.lot-progress-num {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--black-deep);
+}
+
+.lot-units-zero { color: #dc2626; font-weight: 600; }
+
+.lot-figures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #E4E4E4;
+}
+
+.lot-figure { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+
+.lot-figure-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--silver);
+}
+
+.lot-figure-value {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--black-deep);
+}
+
+@media (max-width: 640px) {
+  .lots-scroll { padding: 0.9rem; }
+  .lots-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,72 @@
+.main-col { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.title-stack { display: flex; flex-direction: column; min-width: 0; }
+a.btn-back, a.btn-secondary { text-decoration: none; }
+
+.head-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.span-2 { grid-column: span 2; }
+
+.select-plus { display: flex; gap: 0.4rem; }
+.select-plus .form-input { flex: 1; min-width: 0; }
+
+.btn-square {
+  width: 38px;
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #2a2a2a 0%, #111111 50%, #2c2c2c 100%);
+  color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset, 0 4px 12px rgba(0,0,0,0.25);
+  transition: transform 0.12s;
+}
+
+.btn-square:hover { transform: translateY(-1px); color: var(--white-pure); }
+
+/* ── Líneas ─── */
+.lines-card { overflow: visible; }
+.lines-wrap { overflow-x: auto; }
+
+.lines-table td { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.lines-table td:last-child { text-align: right; }
+
+.col-idx  { width: 34px; }
+.col-stock { width: 64px; }
+.col-qty  { width: 120px; }
+.col-cost { width: 140px; }
+.col-sub  { width: 120px; }
+.col-del  { width: 44px; }
+
+.lines-table app-variant-selector { min-width: 260px; }
+
+.qty-disabled { opacity: 0.5; }
+
+.line-error td { background: #fffafa; }
+.line-error-row td { padding-top: 0; padding-bottom: 0.45rem; border-bottom: 1px solid #F4F4F4; text-align: left !important; }
+
+.btn-block { width: 100%; text-align: center; justify-content: center; }
+
+.saved-code {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--black-deep);
+  background: var(--white-matte);
+  border: 1px dashed #CFCFCF;
+  border-radius: 12px;
+  padding: 0.35rem 1rem;
+}
+
+.saved-footer { flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .head-grid { grid-template-columns: 1fr 1fr; }
+}

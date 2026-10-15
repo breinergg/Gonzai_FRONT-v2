@@ -1,0 +1,133 @@
+<div class="table-card">
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <h3 class="table-header-title">Lotes y rentabilidad</h3>
+      <div class="header-stats">
+        <span class="header-stat"><span class="header-stat-num">{{ active.length }}</span> lotes</span>
+        <span class="header-stat-divider"></span>
+        <span class="header-stat header-stat-ok"><span class="header-stat-num">{{ recuperados }}</span> recuperados</span>
+      </div>
+    </div>
+    <div class="table-header-actions">
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Código, nombre o proveedor…" [(ngModel)]="searchTerm" (input)="applyFilters()" (keydown.enter)="searchByCode()" />
+        <span class="spinner spinner-sm spinner-light" *ngIf="searchingCode"></span>
+      </div>
+      <select class="table-filter" [(ngModel)]="proveedorId" (change)="load()">
+        <option [ngValue]="null">Todos los proveedores</option>
+        <option *ngFor="let s of suppliers" [ngValue]="s.id">{{ s.nombre }}</option>
+      </select>
+      <button class="header-chip" [class.chip-on]="soloConStock" (click)="toggleStock()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        Con stock
+      </button>
+      <a class="btn-add" routerLink="/purchases/new">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo Lote
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="summary-bar" *ngIf="!loading && !error && lots.length > 0">
+    <div class="summary-item">
+      <span class="summary-label">Inversión</span>
+      <span class="summary-value summary-total">{{ totalInversion | cop }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-label">Ingresos <span class="info-tip" [title]="ingresosTooltip">i</span></span>
+      <span class="summary-value">{{ totalIngresos | cop }}</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span class="summary-label">Ganancia neta</span>
+      <span class="summary-value" [class.summary-best]="totalGananciaNeta >= 0" [class.summary-bad]="totalGananciaNeta < 0">{{ totalGananciaNeta | cop }}</span>
+    </div>
+    <ng-container *ngIf="annulledCount">
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <span class="summary-label">Anulados (no suman)</span>
+        <label class="annulled-toggle">
+          <input type="checkbox" [(ngModel)]="showAnnulled" (change)="applyFilters()" />
+          <span>{{ annulledCount }} · mostrar</span>
+        </label>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="alert alert-error lots-alert" *ngIf="searchError">{{ searchError }}</div>
+
+  <div *ngIf="loading" class="table-loading"><div class="spinner"></div><span>Cargando lotes...</span></div>
+
+  <div *ngIf="error && !loading" class="table-error">
+    <span>{{ error }}</span>
+    <button class="btn-retry" (click)="load()">Reintentar</button>
+  </div>
+
+  <div *ngIf="!loading && !error && filtered.length === 0" class="table-empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+    </svg>
+    <span class="empty-title">No hay lotes</span>
+    <span class="empty-text">{{ lots.length ? 'No hay resultados con los filtros aplicados' : (soloConStock ? 'Ningún lote tiene stock disponible' : 'Registra una compra a proveedor para crear tu primer lote') }}</span>
+  </div>
+
+  <div class="lots-scroll" *ngIf="!loading && !error && filtered.length > 0">
+    <div class="lots-grid">
+      <div *ngFor="let l of filtered" class="lot-card" [class.lot-annulled]="isAnulado(l.estado)" (click)="open(l)" tabindex="0" (keydown.enter)="open(l)">
+        <div class="lot-top">
+          <span class="code-badge">{{ l.codigo || ('#' + l.compraProveedorId) }}</span>
+          <span class="status-badge doc-anulada" *ngIf="isAnulado(l.estado)" [title]="'Lote anulado'">Anulado</span>
+          <ng-container *ngIf="!isAnulado(l.estado)">
+            <span class="status-badge status-active lot-badge" *ngIf="l.inversionRecuperada">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Inversión recuperada
+            </span>
+            <span class="status-badge pay-parcial" *ngIf="!l.inversionRecuperada">{{ pct(l.porcentajeRecuperado) }} % recuperado</span>
+          </ng-container>
+        </div>
+
+        <div class="lot-title">
+          <span class="lot-name">{{ l.nombre || 'Lote sin nombre' }}</span>
+          <span class="lot-meta">{{ l.proveedorNombre }} · {{ l.fecha | fechaCo }}</span>
+        </div>
+
+        <div class="lot-progress">
+          <div class="lot-progress-head">
+            <span>Vendido</span>
+            <span class="lot-progress-num">{{ pct(l.porcentajeVendido) }} %</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [ngClass]="soldBarClass(l)" [style.width.%]="pct(l.porcentajeVendido)"></div>
+          </div>
+          <div class="lot-units">
+            <span>{{ l.unidadesVendidas }} de {{ l.unidadesCompradas }} prendas</span>
+            <span [class.lot-units-zero]="l.unidadesDisponibles === 0">{{ l.unidadesDisponibles }} disponibles</span>
+          </div>
+        </div>
+
+        <div class="lot-figures">
+          <div class="lot-figure">
+            <span class="lot-figure-label">Inversión</span>
+            <span class="lot-figure-value">{{ l.inversionTotal | cop }}</span>
+          </div>
+          <div class="lot-figure">
+            <span class="lot-figure-label">Ganancia neta</span>
+            <span class="lot-figure-value" [class.price-ok]="l.gananciaNeta > 0" [class.price-bad]="l.gananciaNeta < 0">{{ l.gananciaNeta | cop }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-footer" *ngIf="!loading && !error && filtered.length > 0">
+    <span class="table-count">{{ filtered.length }} de {{ lots.length }} lotes</span>
+  </div>
+</div>

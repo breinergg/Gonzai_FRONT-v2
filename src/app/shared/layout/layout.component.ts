@@ -11,6 +11,8 @@ interface NavItem {
   route: string;
   adminOnly: boolean;
   keywords?: string[];
+  /** Solo aparece en la búsqueda (accesos directos), no en el menú lateral. */
+  searchOnly?: boolean;
 }
 
 @Component({
@@ -29,14 +31,18 @@ export class LayoutComponent {
   searchFocused = false;
 
   readonly allNavItems: NavItem[] = [
-    { id: 'dashboard',        label: 'Dashboard',     icon: 'grid',       route: '/dashboard',        adminOnly: false, keywords: ['inicio', 'panel', 'principal'] },
-    { id: 'products',         label: 'Productos',      icon: 'box',        route: '/products',         adminOnly: false, keywords: ['producto', 'catalogo', 'stock'] },
-    { id: 'clients',          label: 'Clientes',       icon: 'users',      route: '/clients',          adminOnly: false, keywords: ['cliente', 'deuda'] },
-    { id: 'inventory',        label: 'Inventario',     icon: 'clipboard',  route: '/inventory',        adminOnly: false, keywords: ['inventario', 'movimiento', 'entrada', 'salida'] },
-    { id: 'client-movements', label: 'Mov. Clientes',  icon: 'movements',  route: '/client-movements', adminOnly: false, keywords: ['movimiento', 'cliente', 'pago', 'deuda'] },
-    { id: 'sales',            label: 'Ventas',         icon: 'dollar',     route: '/sales',            adminOnly: false, keywords: ['venta', 'ventas', 'diaria'] },
-    { id: 'users',            label: 'Usuarios',       icon: 'user-admin', route: '/users',            adminOnly: true,  keywords: ['usuario', 'admin', 'administrador'] },
-    { id: 'profile',          label: 'Mi Perfil',      icon: 'user',       route: '/profile',          adminOnly: false, keywords: ['perfil', 'cuenta', 'contraseña', 'password'] },
+    { id: 'dashboard',    label: 'Dashboard',     icon: 'grid',       route: '/dashboard',     adminOnly: false, keywords: ['inicio', 'panel', 'principal', 'asistente', 'goncho', 'chat', 'ia'] },
+    { id: 'sales',        label: 'Ventas',        icon: 'dollar',     route: '/sales',         adminOnly: false, keywords: ['venta', 'ventas', 'cobrar', 'abono', 'pago'] },
+    { id: 'clients',      label: 'Clientes',      icon: 'users',      route: '/clients',       adminOnly: false, keywords: ['cliente', 'deuda', 'saldo', 'abono'] },
+    { id: 'products',     label: 'Productos',     icon: 'box',        route: '/products',      adminOnly: false, keywords: ['producto', 'catalogo', 'stock', 'variante', 'talla', 'color', 'prenda'] },
+    { id: 'purchases',    label: 'Compras',       icon: 'cart',       route: '/purchases',     adminOnly: false, keywords: ['compra', 'compras', 'factura', 'lote'] },
+    { id: 'lots',         label: 'Lotes',         icon: 'trend',      route: '/lots',          adminOnly: false, keywords: ['lote', 'lotes', 'rentabilidad', 'ganancia', 'inversion'] },
+    { id: 'inventory',    label: 'Inventario',    icon: 'clipboard',  route: '/inventory',     adminOnly: false, keywords: ['inventario', 'movimiento', 'entrada', 'salida', 'ajuste'] },
+    { id: 'suppliers',    label: 'Proveedores',   icon: 'truck',      route: '/suppliers',     adminOnly: false, keywords: ['proveedor', 'proveedores'] },
+    { id: 'users',        label: 'Usuarios',      icon: 'user-admin', route: '/users',         adminOnly: true,  keywords: ['usuario', 'admin', 'administrador', 'configuracion'] },
+    { id: 'profile',      label: 'Mi Perfil',     icon: 'user',       route: '/profile',       adminOnly: false, keywords: ['perfil', 'cuenta', 'contraseña', 'password'], searchOnly: true },
+    { id: 'sale-new',     label: 'Nueva venta',   icon: 'plus',       route: '/sales/new',     adminOnly: false, keywords: ['nueva venta', 'vender', 'pos', 'caja'], searchOnly: true },
+    { id: 'purchase-new', label: 'Nuevo lote',    icon: 'plus',       route: '/purchases/new', adminOnly: false, keywords: ['nuevo lote', 'nueva compra', 'registrar compra'], searchOnly: true },
   ];
 
   currentUser = this.auth.currentUser;
@@ -44,7 +50,7 @@ export class LayoutComponent {
   isAdmin = computed(() => this.auth.isAdmin());
 
   navItems = computed(() =>
-    this.allNavItems.filter(item => item.id !== 'profile' && (!item.adminOnly || this.isAdmin()))
+    this.allNavItems.filter(item => !item.searchOnly && (!item.adminOnly || this.isAdmin()))
   );
 
   searchableItems = computed(() =>
@@ -91,7 +97,7 @@ export class LayoutComponent {
   }
 
   navigateToModule(route: string): void {
-    this.router.navigate([route]);
+    this.router.navigateByUrl(route);
     this.closeSearch();
   }
 

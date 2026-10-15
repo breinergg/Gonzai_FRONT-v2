@@ -1,0 +1,177 @@
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class.modal-header-danger]="sale && isAnulado(sale.estado)">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div>
+          <span class="modal-title">Venta #{{ saleId }}{{ sale ? ' · ' + sale.clienteNombre : '' }}</span>
+          <span class="modal-subtitle" *ngIf="sale">{{ sale.fecha | fechaCo:'datetime' }} · {{ unidades }} prendas</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="close()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="table-loading" *ngIf="loading && !sale"><div class="spinner"></div></div>
+      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+
+      <ng-container *ngIf="sale">
+        <div class="alert alert-error" *ngIf="isAnulado(sale.estado)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span>Venta anulada el {{ sale.fechaAnulacion | fechaCo:'datetime' }}. Motivo: <strong>{{ sale.motivoAnulacion }}</strong>. El stock regresó al inventario y sus abonos se anularon.</span>
+        </div>
+
+        <div class="kpi-grid sale-kpis">
+          <div class="kpi-card kpi-dark kpi-gold">
+            <span class="kpi-label">Total</span>
+            <span class="kpi-value" [class.strike]="isAnulado(sale.estado)">{{ sale.total | cop }}</span>
+          </div>
+          <div class="kpi-card kpi-ok">
+            <span class="kpi-label">Pagado</span>
+            <span class="kpi-value">{{ sale.montoPagado | cop }}</span>
+          </div>
+          <div class="kpi-card" [class.kpi-bad]="sale.saldoPendiente > 0">
+            <span class="kpi-label">Saldo</span>
+            <span class="kpi-value">{{ sale.saldoPendiente | cop }}</span>
+            <span class="kpi-sub"><span class="status-badge" [ngClass]="estadoPagoClass(sale.estadoPago)">{{ sale.estadoPago }}</span></span>
+          </div>
+          <div class="kpi-card" *ngIf="isAdmin">
+            <span class="kpi-label">Ganancia</span>
+            <span class="kpi-value" [class.price-ok]="sale.ganancia > 0" [class.price-bad]="sale.ganancia < 0">{{ sale.ganancia | cop }}</span>
+            <span class="kpi-sub">Costo {{ sale.costoTotal | cop }}</span>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Cliente</span>
+            <a class="detail-value link-cell" [routerLink]="['/clients', sale.clienteId]" (click)="close()">{{ sale.clienteNombre }}</a>
+          </div>
+          <div class="detail-item"><span class="detail-label">Vendió</span><span class="detail-value">{{ sale.usuarioNombre }}</span></div>
+          <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value"><span class="status-badge" [ngClass]="isAnulado(sale.estado) ? 'doc-anulada' : 'status-active'">{{ sale.estado }}</span></span></div>
+          <div class="detail-item" *ngIf="sale.descripcion"><span class="detail-label">Nota</span><span class="detail-value">{{ sale.descripcion }}</span></div>
+        </div>
+
+        <span class="section-title">Prendas <span class="count-pill">{{ sale.detalles.length }}</span></span>
+        <div class="inner-table-wrap">
+          <table class="data-table table-compact">
+            <thead>
+              <tr>
+                <th>Prenda</th>
+                <th>Lote</th>
+                <th class="th-num">Cant.</th>
+                <th class="th-num">Precio</th>
+                <th class="th-num">Subtotal</th>
+                <th class="th-num" *ngIf="isAdmin">Costo</th>
+                <th class="th-num" *ngIf="isAdmin">Ganancia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of sale.detalles" class="table-row">
+                <td>
+                  <div class="product-info">
+                    <span class="product-name">{{ d.productoNombre }}</span>
+                    <span class="product-date">{{ d.varianteNombre }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="lots-cell">
+                    <ng-container *ngIf="isAdmin && d.consumos.length; else requested">
+                      <span class="code-badge" *ngFor="let c of d.consumos" [title]="c.cantidad + ' und × ' + (c.costoUnitario | cop)">
+                        {{ c.loteCodigo || 'Inicial' }} · {{ c.cantidad }}
+                      </span>
+                    </ng-container>
+                    <ng-template #requested>
+                      <span class="code-badge" *ngIf="d.loteSolicitadoCodigo">{{ d.loteSolicitadoCodigo }}</span>
+                      <span class="cell-sub" *ngIf="!d.loteSolicitadoCodigo">Automático</span>
+                    </ng-template>
+                  </div>
+                </td>
+                <td class="td-num"><span class="stock-num">{{ d.cantidad }}</span></td>
+                <td class="td-num price-cell">{{ d.precioVentaUnitario | cop }}</td>
+                <td class="td-num price-cell price-venta">{{ d.subtotal | cop }}</td>
+                <td class="td-num price-cell" *ngIf="isAdmin">{{ d.costoTotal | cop }}</td>
+                <td class="td-num price-cell" *ngIf="isAdmin" [class.price-ok]="d.ganancia > 0" [class.price-bad]="d.ganancia < 0">{{ d.ganancia | cop }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <span class="section-title">Pagos <span class="count-pill">{{ sale.pagos.length }}</span></span>
+        <div class="table-empty empty-sm" *ngIf="!sale.pagos.length">
+          <span class="empty-text">No se ha registrado ningún pago para esta venta.</span>
+        </div>
+        <div class="inner-table-wrap" *ngIf="sale.pagos.length">
+          <table class="data-table table-compact">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Método</th>
+                <th class="th-num">Monto</th>
+                <th>Estado</th>
+                <th *ngIf="isAdmin"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pg of sale.pagos" class="table-row" [class.row-annulled]="isAnulado(pg.estado)">
+                <td>
+                  <div class="date-cell">
+                    <span class="date-main">{{ pg.fecha | fechaCo }}</span>
+                    <span class="date-time">{{ pg.fecha | fechaCo:'time' }}</span>
+                  </div>
+                </td>
+                <td><span class="category-badge">{{ metodoPagoLabel(pg.metodoPago) }}</span></td>
+                <td class="td-num price-cell price-ok" [class.strike]="isAnulado(pg.estado)">{{ pg.monto | cop }}</td>
+                <td><span class="status-badge" [ngClass]="isAnulado(pg.estado) ? 'doc-anulada' : 'status-active'">{{ pg.estado }}</span></td>
+                <td *ngIf="isAdmin">
+                  <button class="action-btn btn-sm action-delete" *ngIf="!isAnulado(pg.estado) && !isAnulado(sale.estado)" (click)="annulPayment = pg; annulError = ''" title="Anular pago">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="modal-footer" *ngIf="sale">
+      <button class="btn-outline-danger modal-footer-left" *ngIf="isAdmin && !isAnulado(sale.estado)" (click)="annulSale = true; annulError = ''">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Anular venta
+      </button>
+      <button class="btn-secondary" (click)="close()">Cerrar</button>
+      <button class="btn-success" *ngIf="canPay" (click)="showPayment = true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Abonar
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-payment-modal
+  *ngIf="showPayment && sale"
+  [ventaId]="sale.id"
+  [clienteId]="sale.clienteId"
+  [clienteNombre]="sale.clienteNombre"
+  [saldo]="sale.saldoPendiente"
+  [ventaTotal]="sale.total"
+  [ventaFecha]="sale.fecha"
+  (paid)="onPaid()"
+  (closed)="showPayment = false">
+</app-payment-modal>
+
+<app-annul-modal
+  *ngIf="sale && (annulSale || annulPayment)"
+  [title]="annulPayment ? 'Anular pago' : 'Anular venta'"
+  [subject]="annulPayment ? ('el pago de ' + (annulPayment.monto | cop)) : ('la venta #' + sale.id)"
+  [warning]="annulPayment ? 'El saldo pendiente de la venta aumentará en ese valor.' : 'Las prendas regresan al inventario (a su lote original) y los abonos de esta venta también se anulan.'"
+  [loading]="annulling"
+  [error]="annulError"
+  (confirmed)="confirmAnnul($event)"
+  (cancelled)="cancelAnnul()">
+</app-annul-modal>

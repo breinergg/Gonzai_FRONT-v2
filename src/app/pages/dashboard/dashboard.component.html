@@ -5,7 +5,7 @@
       <div class="col-left">
 
         <!-- Revenue card (dark) -->
-        <div class="card card-dark revenue-card">
+        <div class="card card-dark revenue-card card-link" routerLink="/sales" title="Ver ventas">
           <div class="revenue-header">
             <div class="revenue-icon-wrap">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -30,7 +30,7 @@
         </div>
 
         <!-- Deudas card (dark) -->
-        <div class="card card-dark deudas-card">
+        <div class="card card-dark deudas-card card-link" routerLink="/sales" [queryParams]="{ pendientes: 1 }" title="Ver ventas por cobrar">
           <div class="deudas-header">
             <div class="deudas-icon-wrap">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -41,7 +41,7 @@
             <span class="revenue-badge">Pendientes</span>
           </div>
           <p class="revenue-title">Deudas de Clientes</p>
-          <h2 class="revenue-amount">{{ formatCurrency(mayorDeuda?.totalDeuda ?? 0) }}</h2>
+          <h2 class="revenue-amount">{{ formatCurrency(totalDeuda) }}</h2>
           <div class="revenue-footer">
             <span class="deudas-count">{{ clientesConDeuda }} cliente{{ clientesConDeuda !== 1 ? 's' : '' }} con deuda activa</span>
           </div>
@@ -68,53 +68,57 @@
         <div class="summary-grid">
 
           <!-- Clientes activos -->
-          <div class="registry-item summary-stat-item">
-            <div class="summary-stat-top">
-              <div class="registry-icon clients-icon summary-stat-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                </svg>
-              </div>
-              <span class="summary-stat-badge clients-badge">Activos</span>
+          <div class="registry-item summary-stat-item card-link" routerLink="/clients">
+            <div class="registry-icon clients-icon summary-stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </div>
             <span class="summary-stat-value">{{ clientesActivos }}</span>
-            <span class="summary-stat-label">Clientes Activos</span>
+            <span class="summary-stat-label">Clientes activos</span>
           </div>
 
           <!-- Productos activos -->
-          <div class="registry-item summary-stat-item">
-            <div class="summary-stat-top">
-              <div class="registry-icon products-icon summary-stat-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                </svg>
-              </div>
-              <span class="summary-stat-badge products-badge">Activos</span>
+          <div class="registry-item summary-stat-item card-link" routerLink="/products">
+            <div class="registry-icon products-icon summary-stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+              </svg>
             </div>
             <span class="summary-stat-value">{{ productosActivos }}</span>
-            <span class="summary-stat-label">Productos Activos</span>
+            <span class="summary-stat-label">Productos activos</span>
           </div>
 
-          <!-- Top deudor -->
-          <div class="registry-item summary-stat-item">
-            <div class="summary-stat-top">
-              <div class="registry-icon summary-debtor-icon summary-stat-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                  <line x1="1" y1="10" x2="23" y2="10"/>
-                </svg>
-              </div>
-              <span class="summary-stat-badge debt-badge">Mayor deuda</span>
+          <!-- Mayor deuda -->
+          <div class="registry-item summary-stat-item" [class.card-link]="!!mayorDeuda" [routerLink]="mayorDeuda ? ['/clients', mayorDeuda.id] : null">
+            <div class="registry-icon summary-debtor-icon summary-stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
             </div>
-            <span class="summary-stat-value summary-stat-name">
-              <ng-container *ngIf="!loadingMayorDeuda && mayorDeuda">{{ mayorDeuda.nombre }}</ng-container>
-              <span *ngIf="loadingMayorDeuda" style="opacity:0.4">...</span>
-              <span *ngIf="!loadingMayorDeuda && !mayorDeuda" style="opacity:0.4">Sin clientes registrados</span>
-            </span>
-            <span class="summary-debtor-amount">
+            <span class="summary-stat-value" [class.summary-stat-muted]="loadingMayorDeuda || !mayorDeuda">
               <ng-container *ngIf="!loadingMayorDeuda && mayorDeuda">{{ formatCurrency(mayorDeuda.totalDeuda) }}</ng-container>
-              <span *ngIf="loadingMayorDeuda" style="opacity:0.4">...</span>
+              <ng-container *ngIf="!loadingMayorDeuda && !mayorDeuda">—</ng-container>
+              <ng-container *ngIf="loadingMayorDeuda">…</ng-container>
             </span>
+            <span class="summary-stat-hint" *ngIf="!loadingMayorDeuda && mayorDeuda" [title]="mayorDeuda.nombre">{{ mayorDeuda.nombre }}</span>
+            <span class="summary-stat-label">Mayor deuda</span>
+          </div>
+
+          <!-- Por cobrar -->
+          <div class="registry-item summary-stat-item card-link" routerLink="/sales" [queryParams]="{ pendientes: 1 }">
+            <div class="registry-icon summary-pending-icon summary-stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <span class="summary-stat-value">{{ ventasPorCobrar !== null ? formatCurrency(saldoPorCobrar) : '…' }}</span>
+            <span class="summary-stat-hint" *ngIf="ventasPorCobrar !== null && ventasPorCobrar > 0">
+              {{ ventasPorCobrar }} {{ ventasPorCobrar === 1 ? 'venta' : 'ventas' }}
+            </span>
+            <span class="summary-stat-label">Por cobrar</span>
           </div>
 
         </div>

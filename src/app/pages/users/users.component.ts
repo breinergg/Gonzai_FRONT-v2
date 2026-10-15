@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { UsuarioResponse, UserCreateRequest, UserUpdateRequest } from '../../core/models/auth.model';
+import { formatColombia } from '../../core/utils/format';
 
 @Component({
   selector: 'app-users',
@@ -272,11 +273,7 @@ export class UsersComponent implements OnInit {
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('es-CL', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    return formatColombia(iso, 'date');
   }
 
   get isSaveDisabled(): boolean {

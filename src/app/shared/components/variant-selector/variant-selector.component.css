@@ -1,0 +1,157 @@
+:host {
+  display: block;
+  flex: none;
+  padding: 0;
+  gap: 0;
+  min-height: auto;
+  animation: none;
+  position: relative;
+  min-width: 0;
+}
+
+.vs-field { position: relative; display: flex; align-items: center; }
+
+.vs-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--silver);
+  pointer-events: none;
+}
+
+.vs-input { padding-left: 2rem; padding-right: 4.2rem; }
+.vs-compact .vs-icon { left: 0.6rem; }
+.vs-compact .vs-input { padding-left: 1.75rem; }
+.vs-has-value .vs-input { font-weight: 600; }
+.vs-invalid .vs-input { border-color: rgba(220,38,38,0.55); }
+
+.vs-field > .vs-stock-tag {
+  position: absolute;
+  right: 0.5rem;
+}
+
+.vs-stock-tag {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vs-stock-tag.vs-ok  { background: #d1fae5; color: #059669; }
+.vs-stock-tag.vs-low { background: #fef3c7; color: #d97706; }
+.vs-stock-tag.vs-out { background: #fee2e2; color: #dc2626; }
+
+/* ── Dropdown ─── */
+.vs-dropdown {
+  position: fixed;
+  z-index: 1200;
+  background: var(--white-pure);
+  border: 1px solid #DCDCDC;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+  overflow-y: auto;
+  padding: 0.35rem;
+  animation: overlayIn 0.12s ease-out;
+}
+
+.vs-dropdown::-webkit-scrollbar { width: 4px; }
+.vs-dropdown::-webkit-scrollbar-thumb { background: #D8D8D8; border-radius: 4px; }
+
+.vs-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  font-size: 0.74rem;
+  color: var(--silver);
+}
+
+.vs-group { padding: 0.25rem 0; border-bottom: 1px solid #F2F2F2; }
+.vs-group:last-of-type { border-bottom: none; }
+
+.vs-product {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 10px;
+}
+
+.vs-product-pick { cursor: pointer; }
+.vs-product-pick:hover { background: var(--white-matte); }
+
+.vs-product-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+
+.vs-product-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--black-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs-product-meta { font-size: 0.62rem; color: var(--silver); }
+
+.vs-price {
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--black-deep);
+}
+
+.vs-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem 0.4rem 2.6rem;
+}
+
+.vs-variant {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 9px;
+  border: 1px solid #E3E3E3;
+  background: var(--white-matte);
+  font-family: 'Montserrat', system-ui, sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.12s, background 0.15s;
+}
+
+.vs-variant:hover { border-color: #111; background: var(--white-pure); transform: translateY(-1px); }
+
+.vs-variant-name { font-size: 0.72rem; font-weight: 700; color: var(--black-deep); }
+.vs-variant-meta { font-size: 0.6rem; font-weight: 600; color: var(--mid-metal); }
+
+.vs-variant.vs-low { border-color: rgba(217,119,6,0.35); }
+.vs-variant.vs-low .vs-variant-meta { color: #d97706; }
+.vs-variant.vs-out { border-style: dashed; }
+.vs-variant.vs-out .vs-variant-meta { color: #dc2626; }
+
+.vs-variant.vs-disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.vs-variant.vs-disabled:hover { border-color: #E3E3E3; background: var(--white-matte); }
+
+.vs-create {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px dashed #CFCFCF;
+  border-radius: 10px;
+  background: var(--white-matte);
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--black-deep);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.vs-create:hover { background: var(--white-soft); border-color: #111; }

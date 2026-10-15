@@ -1,19 +1,22 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { DailySaleService } from '../../core/services/daily-sale.service';
+import { SaleService } from '../../core/services/sale.service';
 import { ClientService } from '../../core/services/client.service';
 import { ProductService } from '../../core/services/product.service';
 import { ChatService } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
-import { VentaMensualResumen } from '../../core/models/daily-sale.model';
+import { VentaMensualResumen } from '../../core/models/sale.model';
 import { ClienteMayorDeuda } from '../../core/models/client.model';
+import { isAnulado } from '../../core/models/common.model';
+import { BUSINESS_TZ, formatCOP } from '../../core/utils/format';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -27,9 +30,11 @@ export class DashboardComponent implements OnInit {
   clientesConDeuda: number = 0;
   clientesActivos: number = 0;
   productosActivos: number = 0;
-
+  totalDeuda: number = 0;
+  ventasPorCobrar: number | null = null;
+  saldoPorCobrar: number = 0;
   constructor(
-    private dailySaleService: DailySaleService,
+    private saleService: SaleService,
     private clientService: ClientService,
     private productService: ProductService,
     private chatService: ChatService,
@@ -43,7 +48,7 @@ export class DashboardComponent implements OnInit {
 
   private readonly welcomeTexts = [
     '¡Hola! Soy Goncho 👋 Tu asistente de Gonzai. ¿En qué te puedo ayudar hoy?',
-    'Puedo ayudarte con información de pedidos, inventario, productos y más.',
+    'Puedo ayudarte con ventas, deudas de clientes, lotes, inventario y más.',
   ];
 
   chatMessages: { from: 'bot' | 'user'; text: string; time: string }[] = [];
@@ -51,13 +56,18 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.chatMessages = this.getWelcomeMessages();
 
-    this.dailySaleService.getResumenMensual().subscribe({
+    this.saleService.getResumenMensual().subscribe({
       next: (data) => { this.resumenMensual = data; this.loadingResumen = false; },
       error: () => { this.loadingResumen = false; }
     });
     this.clientService.getMayorDeuda().subscribe({
       next: (data) => { this.mayorDeuda = data; this.loadingMayorDeuda = false; },
-      error: () => { this.loadingMayorDeuda = false; }
+      // 404 = ningún cliente debe
+      error: () => { this.mayorDeuda = null; this.loadingMayorDeuda = false; }
+    });
+    this.clientService.getTotalDeuda().subscribe({
+      next: (data) => { this.totalDeuda = data.totalDeuda; },
+      error: () => { this.totalDeuda = 0; }
     });
     this.clientService.getCountConDeuda().subscribe({
       next: (data) => { this.clientesConDeuda = data.clientesConDeuda; },
@@ -71,14 +81,22 @@ export class DashboardComponent implements OnInit {
       next: (data) => { this.productosActivos = data.productosActivos; },
       error: () => { this.productosActivos = 0; }
     });
+    this.saleService.getAll({ soloPendientes: true }).subscribe({
+      next: (data) => {
+        const activas = data.filter(v => !isAnulado(v.estado));
+        this.ventasPorCobrar = activas.length;
+        this.saldoPorCobrar = activas.reduce((acc, v) => acc + v.saldoPendiente, 0);
+      },
+      error: () => { this.ventasPorCobrar = 0; }
+    });
   }
 
   formatCurrency(value: number): string {
-    return '$' + value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
+    return formatCOP(value);
   }
 
   private formatTime(date: Date = new Date()): string {
-    return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', timeZone: BUSINESS_TZ });
   }
 
   sendMessage(): void {
@@ -98,16 +116,13 @@ export class DashboardComponent implements OnInit {
     const typingIndex = this.chatMessages.length - 1;
     this.scrollChat();
 
-    const usuarioId = this.auth.currentUser()?.id ?? null;
-
     this.chatService.send({
-      usuarioId,
       pregunta: text,
       usarHistorialDeBd: this.useDbHistory,
       historial,
     }).subscribe({
       next: (res) => {
-        const localTime = this.formatTime(new Date(res.fecha));
+        const localTime = this.formatTime(new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(res.fecha) ? res.fecha : res.fecha + 'Z'));
         this.chatMessages[typingIndex] = { from: 'bot', text: res.respuesta, time: localTime };
         this.chatLoading = false;
         this.scrollChat();

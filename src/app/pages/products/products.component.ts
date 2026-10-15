@@ -1,63 +1,68 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
-import { ProductCreateRequest, ProductUpdateRequest, ProductResponse } from '../../core/models/product.model';
+import { AuthService } from '../../core/services/auth.service';
+import { CategoryResponse } from '../../core/models/category.model';
+import {
+  LOW_STOCK_PRODUCT,
+  LOW_STOCK_VARIANT,
+  ProductResponse,
+  ProductVariant,
+  variantLabel,
+} from '../../core/models/product.model';
+import { apiErrorMessage } from '../../core/utils/api-error';
+import { CopPipe } from '../../shared/pipes/cop.pipe';
+import { FechaCoPipe } from '../../shared/pipes/fecha-co.pipe';
+import {
+  ProductQuickCreateComponent,
+  QuickCreateResult,
+} from '../../shared/components/product-quick-create/product-quick-create.component';
+
+type StatusFilter = 'activos' | 'inactivos' | 'todos';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, CopPipe, FechaCoPipe, ProductQuickCreateComponent],
   templateUrl: './products.component.html',
-  styleUrl: './products.component.css'
+  styleUrls: ['../../shared/styles/gz-ui.css', './products.component.css'],
 })
 export class ProductsComponent implements OnInit {
+  private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
   products: ProductResponse[] = [];
   filteredProducts: ProductResponse[] = [];
+  categories: CategoryResponse[] = [];
+
   searchTerm = '';
-  categoryFilter: number | string = '';
+  categoryFilter: number | '' = '';
+  statusFilter: StatusFilter = 'activos';
+  stockFilter: '' | 'bajo' | 'agotado' = '';
+
   loading = true;
   error = '';
+  notice = '';
 
-  showModal = false;
-  showDeleteModal = false;
-  editingProduct: ProductResponse | null = null;
+  expanded = new Set<number>();
+
+  showCreateModal = false;
+
   deletingProduct: ProductResponse | null = null;
-  saving = false;
+  deleting = false;
+  deleteError = '';
 
-  form = {
-    nombre: '',
-    categoriaId: null as number | null,
-    precioCompra: null as number | null,
-    precioVenta: null as number | null,
-    stockActual: 0,
-    activo: true,
-  };
-
-  categories: { id: number; nombre: string }[] = [];
-
-  // Mini-modal categoría
-  showCategoryModal = false;
-  newCategoryName = '';
-  savingCategory = false;
-  categoryError = '';
-
-  constructor(
-    private productService: ProductService,
-    private categoryService: CategoryService,
-  ) {}
+  readonly variantLabel = variantLabel;
+  readonly isAdmin = this.auth.isAdmin();
 
   ngOnInit(): void {
     this.loadProducts();
-    this.loadCategories();
-  }
-
-  loadCategories(): void {
-    this.categoryService.getAll().subscribe({
-      next: (data) => { this.categories = data; },
-      error: () => {}
-    });
+    this.categoryService.getAll().subscribe({ next: (data) => (this.categories = data) });
   }
 
   loadProducts(): void {
@@ -69,205 +74,147 @@ export class ProductsComponent implements OnInit {
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Error al cargar los productos';
+      error: (err) => {
+        this.error = apiErrorMessage(err, 'Error al cargar los productos');
         this.loading = false;
-      }
+      },
     });
   }
 
   applyFilters(): void {
-    let result = [...this.products];
+    const term = this.searchTerm.trim().toLowerCase();
+    const catId = this.categoryFilter === '' ? null : Number(this.categoryFilter);
 
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(p =>
-        p.nombre.toLowerCase().includes(term) ||
-        p.categoria?.nombre?.toLowerCase().includes(term)
-      );
-    }
-
-    if (this.categoryFilter !== '') {
-      const catId = Number(this.categoryFilter);
-      result = result.filter(p => p.categoriaId === catId);
-    }
-
-    this.filteredProducts = result;
-  }
-
-  onSearchChange(): void {
-    this.applyFilters();
-  }
-
-  onCategoryChange(): void {
-    this.applyFilters();
-  }
-
-  get totalProducts(): number {
-    return this.products.length;
-  }
-
-  get outOfStock(): number {
-    return this.products.filter(p => p.stockActual === 0).length;
-  }
-
-  openCreateModal(): void {
-    this.editingProduct = null;
-    this.form = { nombre: '', categoriaId: null, precioCompra: null, precioVenta: null, stockActual: 0, activo: true };
-    this.showModal = true;
-  }
-
-  openEditModal(product: ProductResponse): void {
-    this.editingProduct = product;
-    this.form = {
-      nombre: product.nombre,
-      categoriaId: product.categoriaId,
-      precioCompra: product.precioCompra,
-      precioVenta: product.precioVenta,
-      stockActual: product.stockActual,
-      activo: product.activo,
-    };
-    this.showModal = true;
-  }
-
-  closeModal(): void {
-    this.showModal = false;
-    this.editingProduct = null;
-  }
-
-  saveProduct(): void {
-    if (!this.form.nombre.trim()) return;
-
-    this.saving = true;
-
-    if (this.editingProduct) {
-      const updatePayload: ProductUpdateRequest = {
-        nombre: this.form.nombre.trim(),
-        categoriaId: this.form.categoriaId ? Number(this.form.categoriaId) : null,
-        precioCompra: this.form.precioCompra !== null ? Number(this.form.precioCompra) : null,
-        precioVenta: this.form.precioVenta !== null ? Number(this.form.precioVenta) : null,
-        activo: this.form.activo,
-      };
-      this.productService.update(this.editingProduct.id, updatePayload).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeModal();
-          this.loadProducts();
-        },
-        error: () => {
-          this.saving = false;
-          this.error = 'Error al actualizar el producto';
-        }
-      });
-    } else {
-      const createPayload: ProductCreateRequest = {
-        nombre: this.form.nombre.trim(),
-        categoriaId: this.form.categoriaId ? Number(this.form.categoriaId) : null,
-        precioCompra: this.form.precioCompra !== null ? Number(this.form.precioCompra) : null,
-        precioVenta: this.form.precioVenta !== null ? Number(this.form.precioVenta) : null,
-        stockActual: Number(this.form.stockActual) || 0,
-      };
-      this.productService.create(createPayload).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeModal();
-          this.loadProducts();
-        },
-        error: () => {
-          this.saving = false;
-          this.error = 'Error al crear el producto';
-        }
-      });
-    }
-  }
-
-  openDeleteModal(product: ProductResponse): void {
-    this.deletingProduct = product;
-    this.showDeleteModal = true;
-  }
-
-  closeDeleteModal(): void {
-    this.showDeleteModal = false;
-    this.deletingProduct = null;
-  }
-
-  confirmDelete(): void {
-    if (!this.deletingProduct) return;
-    this.productService.delete(this.deletingProduct.id).subscribe({
-      next: () => {
-        this.closeDeleteModal();
-        this.loadProducts();
-      },
-      error: (err) => {
-        console.error('[delete error]', err.status, err.error);
-        this.error = 'Error al desactivar el producto';
-        this.closeDeleteModal();
-      }
+    this.filteredProducts = this.products.filter(p => {
+      if (this.statusFilter === 'activos' && !p.activo) return false;
+      if (this.statusFilter === 'inactivos' && p.activo) return false;
+      if (catId !== null && p.categoriaId !== catId) return false;
+      if (this.stockFilter === 'agotado' && p.stockTotal > 0) return false;
+      if (this.stockFilter === 'bajo' && !(p.stockTotal > 0 && p.stockTotal <= LOW_STOCK_PRODUCT)) return false;
+      if (!term) return true;
+      const text = [
+        p.nombre, p.marca, p.categoriaNombre,
+        ...p.variantes.flatMap(v => [v.talla, v.color, v.sku]),
+      ].join(' ').toLowerCase();
+      return text.includes(term);
     });
   }
 
-  /* ── Mini-modal categoría ─── */
-  openCategoryModal(): void {
-    this.newCategoryName = '';
-    this.categoryError = '';
-    this.showCategoryModal = true;
+  /* ── Filas ─── */
+  toggleExpand(product: ProductResponse, event?: Event): void {
+    event?.stopPropagation();
+    if (this.expanded.has(product.id)) this.expanded.delete(product.id);
+    else this.expanded.add(product.id);
   }
 
-  closeCategoryModal(): void {
-    this.showCategoryModal = false;
-    this.newCategoryName = '';
-    this.categoryError = '';
+  openDetail(product: ProductResponse): void {
+    this.router.navigate(['/products', product.id]);
   }
 
-  saveCategory(): void {
-    const nombre = this.newCategoryName.trim();
-    if (!nombre) { this.categoryError = 'El nombre es obligatorio'; return; }
-    if (nombre.length > 100) { this.categoryError = 'Máximo 100 caracteres'; return; }
-
-    this.savingCategory = true;
-    this.categoryError = '';
-    this.categoryService.create({ nombre }).subscribe({
-      next: (cat) => {
-        this.savingCategory = false;
-        this.categories = [...this.categories, { id: cat.id, nombre: cat.nombre }];
-        this.form.categoriaId = cat.id;
-        this.closeCategoryModal();
-      },
-      error: () => {
-        this.savingCategory = false;
-        this.categoryError = 'Error al crear la categoría';
-      }
-    });
+  activeVariants(product: ProductResponse): ProductVariant[] {
+    return product.variantes.filter(v => v.activo);
   }
 
-  getCategoryName(product: ProductResponse): string | null {
-    if (product.categoria) return product.categoria.nombre;
-    const cat = this.categories.find(c => c.id === product.categoriaId);
-    return cat?.nombre ?? null;
+  hasRealVariants(product: ProductResponse): boolean {
+    return product.variantes.some(v => v.talla || v.color);
+  }
+
+  priceRange(product: ProductResponse): { min: number | null; max: number | null } {
+    const prices = this.activeVariants(product)
+      .map(v => v.precioVenta)
+      .filter((p): p is number => p !== null);
+    if (!prices.length) return { min: product.precioVenta, max: product.precioVenta };
+    return { min: Math.min(...prices), max: Math.max(...prices) };
+  }
+
+  variantsSummary(product: ProductResponse): string {
+    const active = this.activeVariants(product);
+    const tallas = new Set(active.map(v => v.talla).filter(Boolean));
+    const colores = new Set(active.map(v => v.color).filter(Boolean));
+    const parts: string[] = [];
+    if (tallas.size) parts.push(`${tallas.size} talla${tallas.size > 1 ? 's' : ''}`);
+    if (colores.size) parts.push(`${colores.size} color${colores.size > 1 ? 'es' : ''}`);
+    return parts.join(' · ');
+  }
+
+  /** Texto unificado para la columna Variantes (con y sin talla/color). */
+  variantCell(product: ProductResponse): { count: number; label: string } {
+    const active = this.activeVariants(product);
+    const count = active.length || 1;
+    if (!this.hasRealVariants(product)) {
+      return { count: 1, label: 'Prenda única' };
+    }
+    const summary = this.variantsSummary(product);
+    return { count, label: summary || `${count} variantes` };
   }
 
   getStatusClass(product: ProductResponse): string {
     if (!product.activo) return 'status-inactive';
-    if (product.stockActual === 0) return 'status-out';
-    if (product.stockActual <= 10) return 'status-low';
+    if (product.stockTotal === 0) return 'status-out';
+    if (product.stockTotal <= LOW_STOCK_PRODUCT) return 'status-low';
     return 'status-active';
   }
 
   getStatusLabel(product: ProductResponse): string {
     if (!product.activo) return 'Inactivo';
-    if (product.stockActual === 0) return 'Agotado';
-    if (product.stockActual <= 10) return 'Stock bajo';
+    if (product.stockTotal === 0) return 'Agotado';
+    if (product.stockTotal <= LOW_STOCK_PRODUCT) return 'Stock bajo';
     return 'Disponible';
   }
 
   getStockPercent(product: ProductResponse): number {
-    const max = Math.max(...this.products.map(p => p.stockActual), 1);
-    return Math.min((product.stockActual / max) * 100, 100);
+    const max = Math.max(...this.products.map(p => p.stockTotal), 1);
+    return Math.min((product.stockTotal / max) * 100, 100);
   }
 
-  getStockBarClass(product: ProductResponse): string {
-    if (product.stockActual === 0) return 'bar-out';
-    if (product.stockActual <= 10) return 'bar-low';
+  getStockBarClass(stock: number, low = LOW_STOCK_PRODUCT): string {
+    if (stock === 0) return 'bar-out';
+    if (stock <= low) return 'bar-low';
     return 'bar-ok';
+  }
+
+  variantStatus(v: ProductVariant): { cls: string; label: string } {
+    if (!v.activo) return { cls: 'status-inactive', label: 'Inactiva' };
+    if (v.stockActual === 0) return { cls: 'status-out', label: 'Agotada' };
+    if (v.stockActual <= LOW_STOCK_VARIANT) return { cls: 'status-low', label: 'Stock bajo' };
+    return { cls: 'status-active', label: 'Disponible' };
+  }
+
+  /* ── Crear ─── */
+  onCreated(result: QuickCreateResult): void {
+    this.showCreateModal = false;
+    if (result.product) {
+      this.notice = `Producto "${result.product.nombre}" creado con ${result.variants.length} variante${result.variants.length === 1 ? '' : 's'}.`;
+      this.expanded.add(result.product.id);
+    }
+    this.loadProducts();
+  }
+
+  /* ── Desactivar ─── */
+  openDeleteModal(product: ProductResponse, event: Event): void {
+    event.stopPropagation();
+    this.deletingProduct = product;
+    this.deleteError = '';
+  }
+
+  closeDeleteModal(): void {
+    if (this.deleting) return;
+    this.deletingProduct = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.deletingProduct) return;
+    this.deleting = true;
+    this.productService.delete(this.deletingProduct.id).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.deletingProduct = null;
+        this.loadProducts();
+      },
+      error: (err) => {
+        this.deleting = false;
+        this.deleteError = apiErrorMessage(err, 'Error al desactivar el producto');
+      },
+    });
   }
 }

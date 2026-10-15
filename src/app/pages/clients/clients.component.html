@@ -1,6 +1,5 @@
 <!-- CLIENTS TABLE CARD -->
 <div class="table-card">
-  <!-- Dark header with inline stats -->
   <div class="table-header">
     <div class="table-header-left">
       <div class="table-header-icon">
@@ -13,125 +12,96 @@
     </div>
     <div class="table-header-actions">
       <div class="table-search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input
-          type="text"
-          placeholder="Buscar cliente..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearchChange()" />
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Buscar cliente..." [(ngModel)]="searchTerm" (input)="applyFilters()" />
       </div>
-      <select class="table-filter" [(ngModel)]="statusFilter" (change)="onStatusChange()">
+      <select class="table-filter" [(ngModel)]="statusFilter" (change)="applyFilters()">
         <option value="">Todos los estados</option>
         <option value="activo">Activos</option>
         <option value="inactivo">Inactivos</option>
       </select>
-      <button class="btn-movement" (click)="openMovementModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/>
-          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-        </svg>
-        Crear Movimiento
+      <button class="header-chip" [class.chip-on]="debtFilter" (click)="toggleDebt()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        Con deuda
       </button>
+      <a class="btn-add btn-ghost" routerLink="/sales/new">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Nueva Venta
+      </a>
       <button class="btn-add" (click)="openCreateModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Nuevo Cliente
       </button>
     </div>
   </div>
 
-  <!-- Loading state -->
-  <div *ngIf="loading" class="table-loading">
-    <div class="spinner"></div>
-    <span>Cargando clientes...</span>
-  </div>
+  <div *ngIf="loading" class="table-loading"><div class="spinner"></div><span>Cargando clientes...</span></div>
 
-  <!-- Error state -->
   <div *ngIf="error && !loading" class="table-error">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
     <span>{{ error }}</span>
     <button class="btn-retry" (click)="loadClients()">Reintentar</button>
   </div>
 
-  <!-- Empty state -->
   <div *ngIf="!loading && !error && filteredClients.length === 0" class="table-empty">
     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
       <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
     </svg>
     <span class="empty-title">No hay clientes</span>
-    <span class="empty-text" *ngIf="searchTerm || statusFilter">No se encontraron clientes con los filtros aplicados</span>
-    <span class="empty-text" *ngIf="!searchTerm && !statusFilter">Agrega tu primer cliente para comenzar</span>
+    <span class="empty-text" *ngIf="clients.length">No se encontraron clientes con los filtros aplicados</span>
+    <span class="empty-text" *ngIf="!clients.length">Agrega tu primer cliente para comenzar</span>
   </div>
 
-  <!-- Table -->
   <div class="table-wrap" *ngIf="!loading && !error && filteredClients.length > 0">
-    <table class="clients-table">
+    <table class="data-table">
       <thead>
         <tr>
           <th>Cliente</th>
           <th>Teléfono</th>
-          <th>Dirección</th>
+          <th class="hide-sm">Dirección</th>
           <th>Estado</th>
           <th class="saldo-th">Saldo</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let client of filteredClients" class="table-row">
+        <tr *ngFor="let client of filteredClients" class="table-row row-clickable" (click)="openDetail(client)">
           <td>
-            <div class="client-cell">
-              <div class="client-avatar">{{ getInitials(client) }}</div>
-              <div class="client-info">
-                <span class="client-name">{{ getFullName(client) }}</span>
-                <span class="client-id">#{{ client.id }}</span>
+            <div class="product-cell">
+              <div class="product-avatar">{{ initials(client.nombre) }}</div>
+              <div class="product-info">
+                <span class="product-name">{{ client.nombre }}</span>
+                <span class="product-date">#{{ client.id }}</span>
               </div>
             </div>
           </td>
           <td>
-            <span class="cell-text phone-text" *ngIf="client.telefono">{{ client.telefono }}</span>
+            <span class="phone-text" *ngIf="client.telefono">{{ client.telefono }}</span>
             <span class="cell-empty" *ngIf="!client.telefono">—</span>
           </td>
-          <td>
-            <span class="cell-text address-text" *ngIf="client.direccion">{{ client.direccion }}</span>
+          <td class="hide-sm">
+            <span class="desc-cell" *ngIf="client.direccion">{{ client.direccion }}</span>
             <span class="cell-empty" *ngIf="!client.direccion">—</span>
           </td>
-          <td>
-            <span class="status-badge" [ngClass]="getStatusClass(client)">
-              {{ getStatusLabel(client) }}
-            </span>
-          </td>
+          <td><span class="status-badge" [ngClass]="client.activo ? 'status-active' : 'status-inactive'">{{ client.activo ? 'Activo' : 'Inactivo' }}</span></td>
           <td class="saldo-td">
             <span class="saldo-badge" [ngClass]="getSaldoClass(client.id)" [title]="getSaldoTooltip(client.id)">
-              <svg *ngIf="getSaldoClass(client.id) === 'saldo-ok'" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <svg *ngIf="getSaldoClass(client.id) === 'saldo-deuda'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>
-              </svg>
+              <svg *ngIf="getSaldoClass(client.id) === 'saldo-ok'" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg *ngIf="getSaldoClass(client.id) === 'saldo-deuda'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
               {{ getSaldoLabel(client.id) }}
             </span>
           </td>
           <td>
             <div class="action-btns">
-              <button class="action-btn action-edit" (click)="openEditModal(client)" title="Editar">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
+              <a class="action-btn action-view" [routerLink]="['/clients', client.id]" (click)="$event.stopPropagation()" title="Estado de cuenta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </a>
+              <button class="action-btn action-edit" (click)="openEditModal(client, $event)" title="Editar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <button class="action-btn action-delete" (click)="openDeleteModal(client)" title="Eliminar">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                  <path d="M10 11v6M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                </svg>
+              <button class="action-btn action-delete" *ngIf="client.activo" (click)="openDeleteModal(client, $event)" title="Desactivar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
               </button>
             </div>
           </td>
@@ -140,9 +110,8 @@
     </table>
   </div>
 
-  <!-- Footer -->
   <div class="table-footer" *ngIf="!loading && !error && filteredClients.length > 0">
-    <span class="table-count">{{ filteredClients.length }} de {{ totalClients }} clientes</span>
+    <span class="table-count">{{ filteredClients.length }} de {{ clients.length }} clientes</span>
   </div>
 </div>
 
@@ -152,156 +121,68 @@
     <div class="modal-header">
       <h3 class="modal-title">{{ editingClient ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
       <button class="modal-close" (click)="closeModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Nombre <span class="form-required">*</span></label>
-        <input type="text" class="form-input" placeholder="Nombre" [(ngModel)]="form.nombre" />
+        <input type="text" class="form-input" [class.input-invalid]="fieldErrors['nombre']" placeholder="Nombre del cliente" [(ngModel)]="form.nombre" maxlength="100" (keydown.enter)="saveClient()" />
+        <span class="field-error" *ngIf="fieldErrors['nombre']">{{ fieldErrors['nombre'] }}</span>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Teléfono</label>
-          <input type="text" class="form-input" placeholder="+56 9 0000 0000" [(ngModel)]="form.telefono" />
+          <label class="form-label">Teléfono <span class="form-optional">opcional</span></label>
+          <input type="text" class="form-input" placeholder="300 123 4567" [(ngModel)]="form.telefono" maxlength="20" />
+          <span class="field-error" *ngIf="fieldErrors['telefono']">{{ fieldErrors['telefono'] }}</span>
         </div>
-        <div class="form-group form-toggle-group" *ngIf="editingClient">
-          <label class="form-label">Activo</label>
-          <label class="toggle-switch">
-            <input type="checkbox" [(ngModel)]="form.activo" />
-            <span class="toggle-slider"></span>
-          </label>
+        <div class="form-group">
+          <label class="form-label">Dirección <span class="form-optional">opcional</span></label>
+          <input type="text" class="form-input" placeholder="Calle, barrio" [(ngModel)]="form.direccion" maxlength="150" />
+          <span class="field-error" *ngIf="fieldErrors['direccion']">{{ fieldErrors['direccion'] }}</span>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Dirección</label>
-        <input type="text" class="form-input" placeholder="Calle, ciudad..." [(ngModel)]="form.direccion" />
-      </div>
+      <label class="form-group form-toggle-group" *ngIf="editingClient">
+        <span class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="form.activo" />
+          <span class="toggle-slider"></span>
+        </span>
+        <span class="form-label">{{ form.activo ? 'Activo' : 'Inactivo' }}</span>
+      </label>
+      <div class="alert alert-error" *ngIf="formError">{{ formError }}</div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-      <button class="btn-primary" (click)="saveClient()"
-        [disabled]="saving || !form.nombre.trim()">
-        {{ saving ? 'Guardando...' : (editingClient ? 'Actualizar' : 'Crear Cliente') }}
-      </button>
+      <button class="btn-primary" (click)="saveClient()" [disabled]="saving">{{ saving ? 'Guardando...' : (editingClient ? 'Actualizar' : 'Crear Cliente') }}</button>
     </div>
   </div>
 </div>
 
-<!-- DELETE CONFIRMATION MODAL -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+<!-- DEACTIVATE MODAL -->
+<div class="modal-overlay" *ngIf="deletingClient" (click)="deletingClient = deleting ? deletingClient : null">
   <div class="modal-card modal-small" (click)="$event.stopPropagation()">
     <div class="modal-header modal-header-danger">
-      <h3 class="modal-title">Eliminar Cliente</h3>
-      <button class="modal-close" (click)="closeDeleteModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
+      <h3 class="modal-title">Desactivar Cliente</h3>
+      <button class="modal-close" (click)="deletingClient = null">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body delete-body">
       <div class="delete-icon-wrap">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-        </svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
       </div>
       <p class="delete-text">
-        ¿Estás seguro de eliminar a
-        <strong>{{ deletingClient ? getFullName(deletingClient) : '' }}</strong>?
-        Esta acción no se puede deshacer.
+        ¿Desactivar a <strong>{{ deletingClient.nombre }}</strong>?<br/>
+        Sus ventas y pagos se conservan.
       </p>
+      <div class="alert alert-warn" *ngIf="(saldos.get(deletingClient.id)?.saldo ?? 0) > 0">
+        Este cliente todavía debe {{ saldos.get(deletingClient.id)!.saldo | cop }}.
+      </div>
+      <div class="alert alert-error" *ngIf="deleteError">{{ deleteError }}</div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-      <button class="btn-danger" (click)="confirmDelete()">Eliminar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MOVEMENT MODAL -->
-<div class="modal-overlay" *ngIf="showMovementModal" (click)="closeMovementModal()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3 class="modal-title">Crear Movimiento</h3>
-      <button class="modal-close" (click)="closeMovementModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-    <div class="modal-body">
-
-      <!-- Cliente -->
-      <div class="form-group">
-        <label class="form-label">Cliente <span class="form-required">*</span></label>
-        <select class="form-input" [(ngModel)]="movementForm.clienteId">
-          <option [ngValue]="0" disabled>Seleccionar cliente...</option>
-          <option *ngFor="let c of clients" [ngValue]="c.id">
-            {{ getFullName(c) }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Tipo de movimiento -->
-      <div class="form-group">
-        <label class="form-label">Tipo de Movimiento <span class="form-required">*</span></label>
-        <div class="type-pills">
-          <button
-            class="type-pill"
-            [ngClass]="{'pill-entrada': movementForm.tipoMovimiento === 'deuda', 'pill-active': movementForm.tipoMovimiento === 'deuda'}"
-            (click)="movementForm.tipoMovimiento = 'deuda'">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-            </svg>
-            Deuda
-          </button>
-          <button
-            class="type-pill"
-            [ngClass]="{'pill-salida': movementForm.tipoMovimiento === 'abono', 'pill-active': movementForm.tipoMovimiento === 'abono'}"
-            (click)="movementForm.tipoMovimiento = 'abono'">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-            </svg>
-            Abono
-          </button>
-        </div>
-      </div>
-
-      <!-- Valor -->
-      <div class="form-group">
-        <label class="form-label">Valor <span class="form-required">*</span></label>
-        <input
-          type="number"
-          class="form-input"
-          placeholder="0.00"
-          [(ngModel)]="movementForm.valor"
-          min="0.01"
-          step="0.01" />
-      </div>
-
-      <!-- Descripción -->
-      <div class="form-group">
-        <label class="form-label">Descripción <span class="form-optional">(opcional)</span></label>
-        <textarea
-          class="form-input form-textarea"
-          placeholder="Motivo del movimiento..."
-          [(ngModel)]="movementForm.descripcion"
-          maxlength="150"
-          rows="3"></textarea>
-      </div>
-
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeMovementModal()">Cancelar</button>
-      <button class="btn-primary" (click)="saveMovement()"
-        [disabled]="saving || !movementForm.clienteId || movementForm.valor <= 0">
-        {{ saving ? 'Guardando...' : 'Registrar Movimiento' }}
-      </button>
+      <button class="btn-secondary" (click)="deletingClient = null">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()" [disabled]="deleting">{{ deleting ? 'Desactivando…' : 'Desactivar' }}</button>
     </div>
   </div>
 </div>

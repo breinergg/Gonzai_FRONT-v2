@@ -1,0 +1,361 @@
+<div class="page-grid">
+  <!-- ═══ COLUMNA PRINCIPAL ═══ -->
+  <div class="main-col">
+    <!-- Cliente -->
+    <div class="table-card section-card client-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <a class="btn-back" routerLink="/sales" title="Volver a ventas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </a>
+          <div class="table-header-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <h3 class="table-header-title">Nueva venta</h3>
+        </div>
+        <div class="table-header-actions">
+          <button class="btn-add" (click)="openClientModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            Nuevo cliente
+          </button>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <label class="form-label">Cliente <span class="form-required">*</span></label>
+
+        <!-- Buscar -->
+        <div class="client-search" #clientBox *ngIf="!client">
+          <div class="search-field">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="form-input" [(ngModel)]="clientTerm" (focus)="clientOpen = true" (input)="clientOpen = true"
+              (keydown.enter)="clientResults.length === 1 && selectClient(clientResults[0])"
+              placeholder="Buscar cliente por nombre o teléfono…" autocomplete="off" />
+          </div>
+          <div class="client-dropdown" *ngIf="clientOpen">
+            <button class="client-option" *ngFor="let c of clientResults" (mousedown)="selectClient(c); $event.preventDefault()">
+              <div class="user-avatar">{{ initials(c.nombre) }}</div>
+              <div class="product-info">
+                <span class="product-name">{{ c.nombre }}</span>
+                <span class="product-date">{{ c.telefono || 'Sin teléfono' }}</span>
+              </div>
+            </button>
+            <div class="client-empty" *ngIf="!clientResults.length">No hay clientes con "{{ clientTerm }}".</div>
+            <button class="client-create" (mousedown)="openClientModal(); $event.preventDefault()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Crear cliente{{ clientTerm ? ' "' + clientTerm + '"' : '' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Elegido -->
+        <div class="client-selected" *ngIf="client">
+          <div class="product-avatar">{{ initials(client.nombre) }}</div>
+          <div class="product-info">
+            <span class="product-name">{{ client.nombre }}</span>
+            <span class="product-date">{{ client.telefono || 'Sin teléfono' }}{{ client.direccion ? ' · ' + client.direccion : '' }}</span>
+          </div>
+          <span class="saldo-pill saldo-ok" *ngIf="clientSaldo?.enPazYSalvo">Paz y salvo</span>
+          <span class="saldo-pill saldo-debt" *ngIf="clientSaldo && !clientSaldo.enPazYSalvo" [title]="clientSaldo.ventasPendientes.length + ' ventas pendientes'">
+            Debe {{ clientSaldo.saldo | cop }}
+          </span>
+          <button class="btn-link" (click)="clearClient()">Cambiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carrito -->
+    <div class="table-card section-card cart-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-header-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+          </div>
+          <h3 class="table-header-title">Prendas</h3>
+          <div class="header-stats">
+            <span class="header-stat"><span class="header-stat-num">{{ unidades }}</span> {{ unidades === 1 ? 'prenda' : 'prendas' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body cart-search">
+        <app-variant-selector
+          [allowOutOfStock]="false"
+          placeholder="Escanea o busca: producto, color, talla, SKU…"
+          (selected)="addVariant($event)">
+        </app-variant-selector>
+        <span class="form-hint">Las variantes agotadas aparecen deshabilitadas. Si eliges una prenda que ya está en el carrito, se suma una unidad.</span>
+      </div>
+
+      <div class="table-empty empty-sm" *ngIf="!cart.length">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="empty-title">El carrito está vacío</span>
+        <span class="empty-text">Busca una prenda arriba para agregarla</span>
+      </div>
+
+      <div class="lines-wrap" *ngIf="cart.length">
+        <table class="data-table cart-table">
+          <thead>
+            <tr>
+              <th>Prenda</th>
+              <th class="th-num">Stock</th>
+              <th>Cantidad</th>
+              <th>Precio unit.</th>
+              <th class="th-num">Subtotal</th>
+              <th>Lote</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of cart">
+              <tr class="table-row" [class.line-error]="item.error">
+                <td>
+                  <div class="product-info">
+                    <span class="product-name">{{ item.variant.productoNombre }}</span>
+                    <span class="product-date">{{ item.variant.nombreCompleto }}</span>
+                  </div>
+                </td>
+                <td class="td-num"><span class="stock-num" [class.price-bad]="item.variant.stockActual <= 2">{{ item.variant.stockActual }}</span></td>
+                <td>
+                  <div class="quantity-input-wrap">
+                    <button type="button" class="qty-btn" (click)="step(item, -1)">−</button>
+                    <input class="qty-input" type="number" min="1" [(ngModel)]="item.cantidad" (ngModelChange)="checkItem(item)" />
+                    <button type="button" class="qty-btn" (click)="step(item, 1)">+</button>
+                  </div>
+                </td>
+                <td class="col-price">
+                  <div class="currency-wrap">
+                    <span class="currency-prefix currency-prefix-sm">$</span>
+                    <input class="form-input input-sm" type="number" min="0" step="1000" [(ngModel)]="item.precio" />
+                  </div>
+                </td>
+                <td class="td-num price-cell price-venta">{{ itemSubtotal(item) | cop }}</td>
+                <td>
+                  <button class="lot-btn" (click)="openLot(item)" [class.lot-set]="item.loteCodigo">
+                    {{ item.loteCodigo || 'Automático' }}
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                </td>
+                <td>
+                  <button class="action-btn btn-sm action-delete" (click)="removeItem(item)" title="Quitar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr class="line-error-row" *ngIf="item.error">
+                <td colspan="7">
+                  <span class="field-error">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                    {{ item.error }}
+                  </span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGO ═══ -->
+  <div class="sticky-side">
+    <div class="table-card section-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-header-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <h3 class="table-header-title">Pago</h3>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="total-display">
+          <span class="detail-label">Total a pagar</span>
+          <span class="total-amount">{{ total | cop }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">¿Cómo pagó?</label>
+          <div class="type-pills pay-pills">
+            <button type="button" class="type-pill pill-entrada" [class.pill-active]="payMode === 'todo'" (click)="setPayMode('todo')">Pagó todo</button>
+            <button type="button" class="type-pill pill-partial" [class.pill-active]="payMode === 'abono'" (click)="setPayMode('abono')">Abonó</button>
+            <button type="button" class="type-pill pill-salida" [class.pill-active]="payMode === 'debe'" (click)="setPayMode('debe')">Debe todo</button>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="payMode === 'abono'">
+          <label class="form-label">Valor del abono <span class="form-required">*</span></label>
+          <div class="currency-wrap">
+            <span class="currency-prefix">$</span>
+            <input class="form-input" type="number" min="1" [max]="total" step="1000" [(ngModel)]="abono" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="needsMethod">
+          <label class="form-label">Método de pago <span class="form-required">*</span></label>
+          <div class="chip-group">
+            <button type="button" class="chip" *ngFor="let m of metodos" [class.chip-selected]="metodoPago === m.value" (click)="metodoPago = m.value">{{ m.label }}</button>
+          </div>
+        </div>
+
+        <div class="totals-box">
+          <div class="totals-row"><span>Prendas</span><strong>{{ unidades }}</strong></div>
+          <div class="totals-row"><span>Total</span><strong>{{ total | cop }}</strong></div>
+          <div class="totals-row"><span>Paga ahora</span><strong class="price-ok">{{ montoPagado | cop }}</strong></div>
+          <div class="totals-row totals-grand"><span>Queda debiendo</span><strong [class.saldo-zero]="saldo === 0">{{ saldo | cop }}</strong></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input class="form-input" type="date" [(ngModel)]="fecha" [max]="today" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nota <span class="form-optional">opcional</span></label>
+            <input class="form-input" [(ngModel)]="descripcion" maxlength="150" placeholder="Ej: Entrega a domicilio" />
+          </div>
+        </div>
+
+        <div class="alert alert-error" *ngIf="error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{{ error }}</span>
+        </div>
+
+        <button class="btn-primary btn-block btn-big" (click)="save()" [disabled]="!canSave">
+          <span class="spinner spinner-sm spinner-light" *ngIf="saving"></span>
+          {{ saving ? 'Registrando venta…' : 'Registrar venta' }}
+        </button>
+        <span class="form-hint center-hint" *ngIf="!client || !cart.length">
+          {{ !client ? 'Elige el cliente' : '' }}{{ !client && !cart.length ? ' y ' : '' }}{{ !cart.length ? 'agrega prendas' : '' }} para continuar.
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NUEVO CLIENTE ═══ -->
+<div class="modal-overlay" *ngIf="showClientModal" (click)="showClientModal = clientSaving">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Nuevo Cliente</h3>
+      <button class="modal-close" (click)="showClientModal = false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre <span class="form-required">*</span></label>
+        <input class="form-input" [class.input-invalid]="clientFieldErrors['nombre']" [(ngModel)]="clientForm.nombre" maxlength="100" (keydown.enter)="saveClient()" />
+        <span class="field-error" *ngIf="clientFieldErrors['nombre']">{{ clientFieldErrors['nombre'] }}</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono <span class="form-optional">opcional</span></label>
+        <input class="form-input" [(ngModel)]="clientForm.telefono" maxlength="20" placeholder="300 123 4567" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección <span class="form-optional">opcional</span></label>
+        <input class="form-input" [(ngModel)]="clientForm.direccion" maxlength="150" />
+      </div>
+      <div class="alert alert-error" *ngIf="clientError">{{ clientError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showClientModal = false">Cancelar</button>
+      <button class="btn-primary" (click)="saveClient()" [disabled]="clientSaving">{{ clientSaving ? 'Guardando…' : 'Crear y elegir' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ELEGIR LOTE ═══ -->
+<div class="modal-overlay" *ngIf="lotItem" (click)="lotItem = null">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        </div>
+        <div>
+          <span class="modal-title">Elegir lote</span>
+          <span class="modal-subtitle">{{ lotItem.variant.nombreCompleto }}</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="lotItem = null">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <button class="lot-option" [class.lot-option-active]="!lotItem.compraProveedorId" (click)="chooseLot(null)">
+        <div>
+          <span class="product-name">Automático (FIFO)</span>
+          <span class="product-date">Se descuenta primero del lote más antiguo</span>
+        </div>
+      </button>
+
+      <div class="table-loading" *ngIf="lotLoading"><div class="spinner"></div></div>
+      <div class="alert alert-error" *ngIf="lotError">{{ lotError }}</div>
+
+      <ng-container *ngFor="let o of lotOptions; let first = first">
+        <button class="lot-option" [class.lot-option-active]="lotItem.compraProveedorId === o.compraProveedorId && !!o.compraProveedorId"
+          [disabled]="!o.compraProveedorId" (click)="chooseLot(o)">
+          <div>
+            <span class="product-name">
+              <span class="code-badge">{{ o.loteCodigo || 'Inventario inicial' }}</span>
+              {{ o.loteNombre || '' }}
+              <span class="fifo-tag" *ngIf="first">Siguiente FIFO</span>
+            </span>
+            <span class="product-date">
+              {{ o.proveedorNombre || o.origen }} · ingresó {{ o.fechaIngreso | fechaCo }}
+              <ng-container *ngIf="isAdmin"> · costo {{ o.costoUnitario | cop }}</ng-container>
+            </span>
+          </div>
+          <span class="lot-qty">{{ o.cantidadDisponible }} <small>disp.</small></span>
+        </button>
+      </ng-container>
+      <span class="form-hint" *ngIf="!lotLoading && lotOptions.length && !lotOptions[0].compraProveedorId">El inventario inicial no se puede elegir manualmente; se usa en modo automático.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RECIBO ═══ -->
+<div class="modal-overlay" *ngIf="receipt">
+  <div class="modal-card receipt-card" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-success">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <span class="modal-title">Venta #{{ receipt.id }} registrada</span>
+          <span class="modal-subtitle">{{ receipt.fecha | fechaCo:'datetime' }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="receipt-client">
+        <div class="user-avatar">{{ initials(receipt.clienteNombre) }}</div>
+        <span class="product-name">{{ receipt.clienteNombre }}</span>
+        <span class="status-badge" [ngClass]="estadoPagoClass(receipt.estadoPago)">{{ receipt.estadoPago }}</span>
+      </div>
+      <div class="receipt-lines">
+        <div class="receipt-line" *ngFor="let d of receipt.detalles">
+          <span class="rl-qty">{{ d.cantidad }}×</span>
+          <span class="rl-name">{{ d.varianteNombre }}</span>
+          <span class="rl-sub">{{ d.subtotal | cop }}</span>
+        </div>
+      </div>
+      <div class="totals-box">
+        <div class="totals-row"><span>Total</span><strong>{{ receipt.total | cop }}</strong></div>
+        <div class="totals-row"><span>Pagado{{ receipt.pagos.length ? ' (' + metodoPagoLabel(receipt.pagos[0].metodoPago) + ')' : '' }}</span><strong class="price-ok">{{ receipt.montoPagado | cop }}</strong></div>
+        <div class="totals-row totals-grand"><span>Saldo pendiente</span><strong [class.saldo-zero]="receipt.saldoPendiente === 0">{{ receipt.saldoPendiente | cop }}</strong></div>
+      </div>
+      <div class="totals-box" *ngIf="isAdmin">
+        <div class="totals-row"><span>Costo de la venta</span><strong>{{ receipt.costoTotal | cop }}</strong></div>
+        <div class="totals-row"><span>Ganancia</span><strong class="price-ok">{{ receipt.ganancia | cop }}</strong></div>
+      </div>
+    </div>
+    <div class="modal-footer receipt-footer">
+      <button class="btn-secondary" (click)="goToClient()">Ir al cliente</button>
+      <button class="btn-secondary" (click)="viewSale()">Ver venta</button>
+      <button class="btn-primary" (click)="newSale()">Nueva venta</button>
+    </div>
+  </div>
+</div>

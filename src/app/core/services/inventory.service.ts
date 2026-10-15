@@ -1,24 +1,27 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { InventoryMovementRequest, InventoryMovementResponse } from '../models/inventory.model';
+import { Observable, tap } from 'rxjs';
+import { InventoryAdjustmentRequest, InventoryMovementResponse } from '../models/inventory.model';
 import { environment } from '../../../environments/environment';
+import { ProductService } from './product.service';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
   private readonly apiUrl = `${environment.apiUrl}/movimientoinventario`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private products: ProductService) {}
 
   getAll(): Observable<InventoryMovementResponse[]> {
     return this.http.get<InventoryMovementResponse[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<InventoryMovementResponse> {
-    return this.http.get<InventoryMovementResponse>(`${this.apiUrl}/${id}`);
+  getByProduct(productoId: number): Observable<InventoryMovementResponse[]> {
+    return this.http.get<InventoryMovementResponse[]>(`${this.apiUrl}/producto/${productoId}`);
   }
 
-  create(movement: InventoryMovementRequest): Observable<InventoryMovementResponse> {
-    return this.http.post<InventoryMovementResponse>(this.apiUrl, movement);
+  /** Ajuste manual. La respuesta es un arreglo de movimientos. */
+  createAdjustment(dto: InventoryAdjustmentRequest): Observable<InventoryMovementResponse[]> {
+    return this.http.post<InventoryMovementResponse[]>(`${this.apiUrl}/ajuste`, dto)
+      .pipe(tap(() => this.products.invalidateCatalog()));
   }
 }

@@ -1,0 +1,97 @@
+<div class="modal-overlay overlay-top" (click)="close()">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class.modal-header-success]="result">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div>
+          <span class="modal-title">{{ result ? 'Abono registrado' : 'Registrar abono' }}</span>
+          <span class="modal-subtitle">Venta #{{ ventaId }}{{ clienteNombre ? ' · ' + clienteNombre : '' }}</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="close()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <ng-container *ngIf="!result">
+      <div class="modal-body">
+        <div class="saldo-box">
+          <div>
+            <span class="detail-label">Saldo pendiente</span>
+            <span class="saldo-amount">{{ saldo | cop }}</span>
+          </div>
+          <div class="saldo-meta" *ngIf="ventaTotal !== null">
+            <span>Total venta {{ ventaTotal | cop }}</span>
+            <span *ngIf="ventaFecha">{{ ventaFecha | fechaCo }}</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Monto del abono <span class="form-required">*</span></label>
+          <div class="currency-wrap">
+            <span class="currency-prefix">$</span>
+            <input class="form-input monto-input" type="number" min="1" [max]="saldo" step="1000" [(ngModel)]="monto" [class.input-invalid]="fieldErrors['monto']" (keydown.enter)="save()" />
+          </div>
+          <div class="quick-amounts">
+            <button type="button" class="chip" [class.chip-selected]="monto === saldo" (click)="setMonto(saldo)">Todo</button>
+            <button type="button" class="chip" *ngIf="saldo >= 2000" [class.chip-selected]="monto === Math.round(saldo / 2)" (click)="setMonto(saldo / 2)">Mitad</button>
+          </div>
+          <span class="field-error" *ngIf="fieldErrors['monto']">{{ fieldErrors['monto'] }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Método de pago <span class="form-required">*</span></label>
+          <div class="chip-group">
+            <button type="button" class="chip" *ngFor="let m of metodos" [class.chip-selected]="metodoPago === m.value" (click)="metodoPago = m.value">{{ m.label }}</button>
+          </div>
+          <span class="field-error" *ngIf="fieldErrors['metodopago']">{{ fieldErrors['metodopago'] }}</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input class="form-input" type="date" [(ngModel)]="fecha" [max]="today" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Saldo después</label>
+            <input class="form-input input-readonly" [value]="(saldoDespues | cop)" readonly />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nota <span class="form-optional">opcional</span></label>
+          <input class="form-input" [(ngModel)]="descripcion" maxlength="150" placeholder="Ej: Abono por Nequi" />
+        </div>
+
+        <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="close()">Cancelar</button>
+        <button class="btn-success" (click)="save()" [disabled]="saving">
+          <span class="spinner spinner-sm spinner-light" *ngIf="saving"></span>
+          {{ saving ? 'Registrando…' : 'Registrar abono' }}
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Resultado -->
+    <ng-container *ngIf="result">
+      <div class="modal-body delete-body">
+        <div class="success-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <p class="delete-text">
+          Se registró un abono de <strong>{{ result.monto | cop }}</strong>.<br/>
+          <ng-container *ngIf="result.saldoPendienteVenta > 0">Saldo pendiente de la venta: <strong>{{ result.saldoPendienteVenta | cop }}</strong></ng-container>
+          <ng-container *ngIf="result.saldoPendienteVenta <= 0"><strong class="ok-text">La venta quedó pagada.</strong></ng-container>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="closed.emit()">Listo</button>
+      </div>
+    </ng-container>
+  </div>
+</div>

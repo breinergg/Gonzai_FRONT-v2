@@ -1,0 +1,69 @@
+<div class="vs-field" [class.vs-compact]="compact" [class.vs-has-value]="!!selectedVariant() || !!selectedLabel" [class.vs-invalid]="invalid">
+  <svg class="vs-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  <input
+    #searchInput
+    type="text"
+    class="form-input vs-input"
+    [class.input-sm]="compact"
+    [placeholder]="placeholder"
+    [value]="displayValue"
+    (focus)="onFocus()"
+    (input)="onInput($any($event.target).value)"
+    (keydown.enter)="onEnter($event)"
+    (keydown.escape)="close()"
+    autocomplete="off" />
+  <span class="vs-stock-tag" *ngIf="!open() && selectedVariant() as v" [ngClass]="stockClass(v)">
+    {{ v.stockActual }} und
+  </span>
+</div>
+
+<div class="vs-dropdown" *ngIf="open()" [ngStyle]="dropdownStyle">
+  <div class="vs-state" *ngIf="loading() && !results().length">
+    <div class="spinner spinner-sm"></div> Cargando catálogo…
+  </div>
+
+  <div class="vs-state" *ngIf="!loading() && !results().length">
+    <span>No hay productos que coincidan{{ term() ? ' con "' + term() + '"' : '' }}.</span>
+  </div>
+
+  <div class="vs-group" *ngFor="let g of results()">
+    <div class="vs-product" [class.vs-product-pick]="g.variants.length === 1" (mousedown)="pickProduct(g); $event.preventDefault()">
+      <div class="product-avatar avatar-sm">{{ g.product.nombre.slice(0, 2).toUpperCase() }}</div>
+      <div class="vs-product-info">
+        <span class="vs-product-name">{{ g.product.nombre }}</span>
+        <span class="vs-product-meta">
+          {{ g.product.marca || 'Sin marca' }}
+          <ng-container *ngIf="g.product.categoriaNombre"> · {{ g.product.categoriaNombre }}</ng-container>
+        </span>
+      </div>
+      <ng-container *ngIf="isUnique(g)">
+        <span class="vs-price">{{ g.variants[0].precioVenta | cop }}</span>
+        <span class="vs-stock-tag" [ngClass]="stockClass(g.variants[0])">{{ g.variants[0].stockActual }} und</span>
+      </ng-container>
+    </div>
+
+    <div class="vs-variants" *ngIf="!isUnique(g)">
+      <button
+        type="button"
+        class="vs-variant"
+        *ngFor="let v of g.variants"
+        [ngClass]="stockClass(v)"
+        [class.vs-disabled]="!allowOutOfStock && v.stockActual <= 0"
+        [disabled]="!allowOutOfStock && v.stockActual <= 0"
+        [title]="v.nombreCompleto + (v.sku ? ' · SKU ' + v.sku : '')"
+        (mousedown)="pick(v); $event.preventDefault()">
+        <span class="vs-variant-name">{{ variantLabel(v) }}</span>
+        <span class="vs-variant-meta">{{ v.stockActual }} und · {{ v.precioVenta | cop }}</span>
+      </button>
+    </div>
+  </div>
+
+  <button type="button" class="vs-create" *ngIf="allowCreate" (mousedown)="requestCreate(); $event.preventDefault()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Crear producto o variante{{ term() ? ' "' + term() + '"' : '' }}
+  </button>
+</div>
