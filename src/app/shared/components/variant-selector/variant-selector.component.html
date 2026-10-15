@@ -19,7 +19,11 @@
   </span>
 </div>
 
-<div class="vs-dropdown" *ngIf="open()" [ngStyle]="dropdownStyle">
+<div
+  class="vs-dropdown"
+  *ngIf="open()"
+  [class.vs-dropdown-fixed]="fixedDropdown"
+  [ngStyle]="fixedDropdown ? dropdownStyle : null">
   <div class="vs-state" *ngIf="loading() && !results().length">
     <div class="spinner spinner-sm"></div> Cargando catálogo…
   </div>

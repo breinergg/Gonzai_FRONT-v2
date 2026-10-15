@@ -122,10 +122,6 @@ export class LotsComponent implements OnInit {
     return this.active.reduce((acc, l) => acc + l.gananciaNeta, 0);
   }
 
-  get recuperados(): number {
-    return this.active.filter(l => l.inversionRecuperada).length;
-  }
-
   get annulledCount(): number {
     return this.lots.filter(l => isAnulado(l.estado)).length;
   }

@@ -49,6 +49,12 @@ export class VariantSelectorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() allowCreate = false;
   @Input() compact = false;
   @Input() invalid = false;
+  /** Escapa contenedores con overflow (ventas, tablas). Si es false, el panel va debajo del input en el flujo. */
+  @Input() fixedDropdown = false;
+  /** Con fixedDropdown: mismo ancho y alineación que el input (p. ej. buscador de prendas). */
+  @Input() matchInputWidth = false;
+  /** Limita el panel al ancho de esta columna (p. ej. `.main-col` en nueva venta). */
+  @Input() constrainWithin: string | null = null;
   /** Variantes que ya no se pueden elegir (p. ej. ya están en el carrito). */
   @Input() excludeIds: number[] = [];
 
@@ -122,11 +128,14 @@ export class VariantSelectorComponent implements OnInit, OnChanges, OnDestroy {
   onInput(value: string): void {
     this.term.set(value);
     this.openDropdown();
+    if (this.fixedDropdown) requestAnimationFrame(() => this.updatePosition());
   }
 
   openDropdown(): void {
-    this.updatePosition();
     this.open.set(true);
+    if (this.fixedDropdown) {
+      requestAnimationFrame(() => this.updatePosition());
+    }
   }
 
   close(): void {
@@ -175,12 +184,12 @@ export class VariantSelectorComponent implements OnInit, OnChanges, OnDestroy {
 
   @HostListener('window:resize')
   onViewportChange(): void {
-    if (this.open()) this.updatePosition();
+    if (this.open() && this.fixedDropdown) this.updatePosition();
   }
 
-  /** El evento scroll no burbujea: se escucha en captura para seguir al input dentro de contenedores con scroll. */
+  /** El evento scroll no burbujea: solo aplica al modo fixed. */
   private readonly onAnyScroll = (event: Event) => {
-    if (!this.open()) return;
+    if (!this.open() || !this.fixedDropdown) return;
     const dropdown = this.host.nativeElement.querySelector('.vs-dropdown');
     if (dropdown && dropdown.contains(event.target as Node)) return;
     this.updatePosition();
@@ -194,17 +203,52 @@ export class VariantSelectorComponent implements OnInit, OnChanges, OnDestroy {
     const input = this.searchInput?.nativeElement;
     if (!input) return;
     const rect = input.getBoundingClientRect();
-    const width = Math.max(rect.width, 380);
-    const left = Math.min(rect.left, window.innerWidth - width - 12);
+    
+    // Para matchInputWidth, usar position absolute (relativo al host)
+    if (this.matchInputWidth) {
+      this.dropdownStyle = {
+        position: 'absolute',
+        top: 'calc(100% + 6px)',
+        left: '0',
+        right: '0',
+        bottom: 'unset',
+        width: '100%',
+        overflowY: 'auto',
+        maxHeight: '360px',
+      };
+      return;
+    }
+
+    // Para otros casos, usar fixed con cálculos
+    let width = Math.max(rect.width, 280);
+    let left = Math.min(rect.left, window.innerWidth - width - 12);
+    
+    const bounds = this.constrainWithin
+      ? this.host.nativeElement.closest(this.constrainWithin)?.getBoundingClientRect()
+      : null;
+    if (bounds) {
+      left = Math.max(bounds.left + 4, left);
+      width = Math.min(width, bounds.right - left - 8);
+    }
+
     const spaceBelow = window.innerHeight - rect.bottom;
     const openUp = spaceBelow < 260 && rect.top > spaceBelow;
+    const maxH = openUp
+      ? Math.min(360, rect.top - 18)
+      : Math.min(360, spaceBelow - 18);
+
+    const vertical = openUp
+      ? { top: 'unset', bottom: `${window.innerHeight - rect.top + 6}px` }
+      : { top: `${rect.bottom + 6}px`, bottom: 'unset' };
 
     this.dropdownStyle = {
-      left: `${Math.max(12, left)}px`,
+      position: 'fixed',
+      left: `${left}px`,
+      right: 'unset',
       width: `${width}px`,
-      ...(openUp
-        ? { bottom: `${window.innerHeight - rect.top + 6}px`, maxHeight: `${Math.min(360, rect.top - 18)}px` }
-        : { top: `${rect.bottom + 6}px`, maxHeight: `${Math.min(360, spaceBelow - 18)}px` }),
+      overflowY: 'auto',
+      maxHeight: `${Math.max(120, maxH)}px`,
+      ...vertical,
     };
   }
 }

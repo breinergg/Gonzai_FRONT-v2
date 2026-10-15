@@ -89,10 +89,10 @@
             <input class="form-input" type="number" min="0" [(ngModel)]="stockInicial" placeholder="0" />
           </div>
           <div class="form-group">
-            <label class="form-label">Costo unitario inicial</label>
+            <label class="form-label">Costo de compra <span class="form-optional">stock inicial</span></label>
             <div class="currency-wrap">
               <span class="currency-prefix">$</span>
-              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="costoInicial" placeholder="0" />
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="costoInicial" placeholder="0" title="Lo que pagaste por unidad, no el precio de venta" />
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@
             <div class="combo-head">
               <span class="section-title">Se crearán <span class="count-pill">{{ combos().length }}</span> variantes</span>
               <div class="combo-cost" *ngIf="withInitialStock">
-                <span class="form-label">Costo inicial</span>
+                <span class="form-label">Costo de compra <span class="form-optional">stock inicial</span></span>
                 <div class="currency-wrap">
                   <span class="currency-prefix currency-prefix-sm">$</span>
                   <input class="form-input input-sm" type="number" min="0" step="1000" [(ngModel)]="costoInicial" placeholder="0" />
@@ -210,10 +210,10 @@
             <input class="form-input" type="number" min="0" [(ngModel)]="vStock" placeholder="0" />
           </div>
           <div class="form-group">
-            <label class="form-label">Costo unitario inicial</label>
+            <label class="form-label">Costo de compra <span class="form-optional">stock inicial</span></label>
             <div class="currency-wrap">
               <span class="currency-prefix">$</span>
-              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="vCosto" placeholder="0" />
+              <input class="form-input" type="number" min="0" step="1000" [(ngModel)]="vCosto" placeholder="0" title="Lo que pagaste por unidad, no el precio de venta" />
             </div>
           </div>
         </div>

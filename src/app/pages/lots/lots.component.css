@@ -1,5 +1,78 @@
 a.btn-add { text-decoration: none; }
 
+/* Sin sombra inferior: no opaca la barra de resumen debajo del header */
+.lots-table-header {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.5) inset;
+  z-index: 0;
+}
+
+/* Header en una sola fila */
+.lots-page-header {
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
+.lots-page-header .table-header-left {
+  flex: 0 0 auto;
+}
+
+.lots-header-actions {
+  flex: 1 1 auto;
+  flex-wrap: nowrap !important;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.lots-header-actions .table-search {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.lots-header-actions .table-search input {
+  width: 120px;
+  min-width: 80px;
+}
+
+.lots-header-actions .table-filter {
+  flex: 0 1 auto;
+  max-width: 128px;
+  min-width: 0;
+  font-size: 0.68rem;
+  padding: 0.34rem 1.35rem 0.34rem 0.5rem;
+}
+
+.lots-header-actions .header-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.lots-header-actions .btn-add {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.38rem 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .lots-page-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .lots-header-actions {
+    flex: 1 1 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lots-header-actions::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .annulled-toggle {
   display: inline-flex;
   align-items: center;

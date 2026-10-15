@@ -276,7 +276,7 @@ export class SaleNewComponent implements OnInit {
     if (!this.cart.length) { this.error = 'Agrega al menos una prenda.'; return; }
     for (const item of this.cart) {
       if (!item.cantidad || item.cantidad < 1) { this.error = 'Revisa las cantidades.'; return; }
-      if (item.precio === null || item.precio < 0) { this.error = `Indica el precio de ${item.variant.nombreCompleto}.`; return; }
+      if (item.precio === null || item.precio < 0) { this.error = `Indica el precio de venta de ${item.variant.nombreCompleto}.`; return; }
     }
     if (this.payMode === 'abono' && (!this.abono || this.abono <= 0 || this.abono >= this.total)) {
       this.error = 'El abono debe ser mayor a 0 y menor al total. Usa "Pagó todo" si pagó completo.';

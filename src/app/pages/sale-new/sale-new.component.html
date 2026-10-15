@@ -80,7 +80,11 @@
 
       <div class="section-body cart-search">
         <app-variant-selector
+          class="cart-variant-search"
           [allowOutOfStock]="false"
+          [fixedDropdown]="true"
+          [matchInputWidth]="true"
+          constrainWithin=".main-col"
           placeholder="Escanea o busca: producto, color, talla, SKU…"
           (selected)="addVariant($event)">
         </app-variant-selector>
@@ -97,53 +101,54 @@
         <table class="data-table cart-table">
           <thead>
             <tr>
-              <th>Prenda</th>
-              <th class="th-num">Stock</th>
-              <th>Cantidad</th>
-              <th>Precio unit.</th>
-              <th class="th-num">Subtotal</th>
-              <th>Lote</th>
-              <th></th>
+              <th class="th-cart-prenda">Prenda</th>
+              <th class="th-cart-qty">Cantidad</th>
+              <th class="th-cart-price">Precio venta</th>
+              <th class="th-num th-cart-sub">Subtotal</th>
+              <th class="th-cart-lot">Lote</th>
             </tr>
           </thead>
           <tbody>
             <ng-container *ngFor="let item of cart">
               <tr class="table-row" [class.line-error]="item.error">
-                <td>
-                  <div class="product-info">
-                    <span class="product-name">{{ item.variant.productoNombre }}</span>
-                    <span class="product-date">{{ item.variant.nombreCompleto }}</span>
+                <td class="cart-prenda-cell">
+                  <div class="cart-prenda-row">
+                    <button type="button" class="cart-remove" (click)="removeItem(item)" title="Quitar">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <div class="product-info">
+                      <span class="product-name">{{ item.variant.productoNombre }}</span>
+                      <span class="product-date cart-prenda-meta">
+                        <span class="cart-meta-text">{{ item.variant.nombreCompleto }}</span>
+                        <span class="cart-meta-sep"> · </span>
+                        <span class="cart-stock-inline" [class.cart-stock-low]="item.variant.stockActual <= 2">Stock {{ item.variant.stockActual }}</span>
+                      </span>
+                    </div>
                   </div>
                 </td>
-                <td class="td-num"><span class="stock-num" [class.price-bad]="item.variant.stockActual <= 2">{{ item.variant.stockActual }}</span></td>
-                <td>
-                  <div class="quantity-input-wrap">
+                <td class="cart-qty-cell">
+                  <div class="quantity-input-wrap cart-qty-wrap">
                     <button type="button" class="qty-btn" (click)="step(item, -1)">−</button>
                     <input class="qty-input" type="number" min="1" [(ngModel)]="item.cantidad" (ngModelChange)="checkItem(item)" />
                     <button type="button" class="qty-btn" (click)="step(item, 1)">+</button>
                   </div>
                 </td>
-                <td class="col-price">
-                  <div class="currency-wrap">
+                <td class="cart-price-cell">
+                  <div class="currency-wrap cart-price-wrap">
                     <span class="currency-prefix currency-prefix-sm">$</span>
                     <input class="form-input input-sm" type="number" min="0" step="1000" [(ngModel)]="item.precio" />
                   </div>
                 </td>
-                <td class="td-num price-cell price-venta">{{ itemSubtotal(item) | cop }}</td>
-                <td>
-                  <button class="lot-btn" (click)="openLot(item)" [class.lot-set]="item.loteCodigo">
-                    {{ item.loteCodigo || 'Automático' }}
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-                </td>
-                <td>
-                  <button class="action-btn btn-sm action-delete" (click)="removeItem(item)" title="Quitar">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <td class="td-num price-cell price-venta cart-sub-cell">{{ itemSubtotal(item) | cop }}</td>
+                <td class="cart-lot-cell">
+                  <button type="button" class="lot-btn lot-btn-compact" (click)="openLot(item)" [class.lot-set]="item.loteCodigo" [title]="item.loteCodigo || 'Lote automático (FIFO)'">
+                    {{ item.loteCodigo || 'Auto' }}
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
                   </button>
                 </td>
               </tr>
               <tr class="line-error-row" *ngIf="item.error">
-                <td colspan="7">
+                <td colspan="5">
                   <span class="field-error">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
                     {{ item.error }}

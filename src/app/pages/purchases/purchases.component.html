@@ -1,5 +1,5 @@
 <div class="table-card">
-  <div class="table-header">
+  <div class="table-header purchases-page-header purchases-table-header">
     <div class="table-header-left">
       <div class="table-header-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -7,13 +7,8 @@
         </svg>
       </div>
       <h3 class="table-header-title">Compras / Lotes</h3>
-      <div class="header-stats">
-        <span class="header-stat"><span class="header-stat-num">{{ active.length }}</span> compras</span>
-        <span class="header-stat-divider"></span>
-        <span class="header-stat header-stat-revenue"><span class="header-stat-num">{{ totalInvertido | cop }}</span> invertido</span>
-      </div>
     </div>
-    <div class="table-header-actions">
+    <div class="table-header-actions purchases-header-actions">
       <div class="table-search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" placeholder="Código, nombre, factura…" [(ngModel)]="searchTerm" (input)="applyFilters()" />
@@ -78,14 +73,13 @@
   </div>
 
   <div class="table-wrap" *ngIf="!loading && !error && filtered.length > 0">
-    <table class="data-table">
+    <table class="data-table purchases-table">
       <thead>
         <tr>
           <th>Código</th>
           <th>Lote</th>
           <th>Proveedor</th>
-          <th>Fecha</th>
-          <th class="th-num">Prendas</th>
+          <th class="th-date-compact">Fecha</th>
           <th class="th-num">Envío</th>
           <th class="th-num">Total</th>
           <th>Estado</th>
@@ -102,13 +96,12 @@
             </div>
           </td>
           <td><span class="user-name">{{ p.proveedorNombre }}</span></td>
-          <td>
-            <div class="date-cell">
-              <span class="date-main">{{ p.fecha | fechaCo }}</span>
+          <td class="purchases-date-cell">
+            <div class="date-cell purchases-date-cell">
+              <span class="date-main">{{ p.fecha | fechaCo:'dmy' }}</span>
               <span class="date-time">{{ p.fecha | fechaCo:'time' }}</span>
             </div>
           </td>
-          <td class="td-num"><span class="stock-num">{{ p.totalUnidades }}</span></td>
           <td class="td-num price-cell">{{ p.costoEnvio | cop }}</td>
           <td class="td-num total-cell">{{ p.total | cop }}</td>
           <td>

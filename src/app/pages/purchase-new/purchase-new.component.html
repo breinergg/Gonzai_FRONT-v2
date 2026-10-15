@@ -102,6 +102,7 @@
                 <td>
                   <app-variant-selector
                     [compact]="true"
+                    [fixedDropdown]="true"
                     [selectedId]="line.variant?.id ?? null"
                     [selectedLabel]="line.variant?.nombreCompleto ?? null"
                     [excludeIds]="usedIds(line)"
