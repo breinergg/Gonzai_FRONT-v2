@@ -2,8 +2,8 @@
   <!-- ═══ COLUMNA PRINCIPAL ═══ -->
   <div class="main-col">
     <!-- Cabecera del lote -->
-    <div class="table-card section-card">
-      <div class="table-header">
+    <div class="table-card section-card lot-card">
+      <div class="table-header purchase-table-header">
         <div class="table-header-left">
           <a class="btn-back" routerLink="/purchases" title="Volver a compras">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -60,7 +60,7 @@
 
     <!-- Líneas -->
     <div class="table-card section-card lines-card">
-      <div class="table-header">
+      <div class="table-header purchase-table-header">
         <div class="table-header-left">
           <div class="table-header-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -87,45 +87,45 @@
           <thead>
             <tr>
               <th class="col-idx">#</th>
-              <th>Prenda (producto · color · talla)</th>
-              <th class="th-num col-stock">Stock</th>
+              <th class="col-prenda">Prenda</th>
               <th class="col-qty">Cantidad</th>
               <th class="col-cost">Costo unitario</th>
               <th class="th-num col-sub">Subtotal</th>
-              <th class="col-del"></th>
             </tr>
           </thead>
           <tbody>
             <ng-container *ngFor="let line of lines; let i = index; trackBy: trackLine">
               <tr class="table-row line-row" [class.line-error]="line.error">
                 <td class="col-idx"><span class="id-cell">{{ i + 1 }}</span></td>
-                <td>
-                  <app-variant-selector
-                    [compact]="true"
-                    [fixedDropdown]="true"
-                    [selectedId]="line.variant?.id ?? null"
-                    [selectedLabel]="line.variant?.nombreCompleto ?? null"
-                    [excludeIds]="usedIds(line)"
-                    [allowCreate]="isAdmin"
-                    [invalid]="!!line.error && !line.variant"
-                    placeholder="Buscar prenda…"
-                    (selected)="onVariantSelected(line, $event)"
-                    (createRequested)="openQuickCreate(line, $event)">
-                  </app-variant-selector>
-                </td>
-                <td class="td-num col-stock">
-                  <span class="stock-num" *ngIf="line.variant">{{ line.variant.stockActual }}</span>
-                  <span class="cell-empty" *ngIf="!line.variant">—</span>
+                <td class="col-prenda">
+                  <div class="line-prenda-row">
+                    <button type="button" class="line-remove" (click)="removeLine(line)" *ngIf="line.variant || lines.length > 1" title="Quitar línea">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <app-variant-selector
+                      class="line-variant-selector"
+                      [compact]="true"
+                      [fixedDropdown]="true"
+                      [selectedId]="line.variant?.id ?? null"
+                      [selectedLabel]="line.variant?.nombreCompleto ?? null"
+                      [excludeIds]="usedIds(line)"
+                      [allowCreate]="isAdmin"
+                      [invalid]="!!line.error && !line.variant"
+                      placeholder="Buscar prenda…"
+                      (selected)="onVariantSelected(line, $event)"
+                      (createRequested)="openQuickCreate(line, $event)">
+                    </app-variant-selector>
+                  </div>
                 </td>
                 <td class="col-qty">
-                  <div class="quantity-input-wrap" [class.qty-disabled]="!line.variant">
+                  <div class="quantity-input-wrap line-qty-wrap" [class.qty-disabled]="!line.variant">
                     <button type="button" class="qty-btn" (click)="step(line, -1)" [disabled]="!line.variant">−</button>
                     <input class="qty-input" type="number" min="1" [(ngModel)]="line.cantidad" [disabled]="!line.variant" placeholder="0" />
                     <button type="button" class="qty-btn" (click)="step(line, 1)" [disabled]="!line.variant">+</button>
                   </div>
                 </td>
                 <td class="col-cost">
-                  <div class="currency-wrap">
+                  <div class="currency-wrap line-cost-wrap">
                     <span class="currency-prefix currency-prefix-sm">$</span>
                     <input class="form-input input-sm" type="number" min="0" step="1000" [(ngModel)]="line.costoUnitario" [disabled]="!line.variant" placeholder="0"
                       [class.input-invalid]="line.error && line.variant && line.costoUnitario === null" />
@@ -134,15 +134,10 @@
                 <td class="td-num col-sub">
                   <span class="price-cell price-venta" *ngIf="line.variant">{{ lineSubtotal(line) | cop }}</span>
                 </td>
-                <td class="col-del">
-                  <button class="action-btn btn-sm action-delete" (click)="removeLine(line)" *ngIf="line.variant || lines.length > 1" title="Quitar línea">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </td>
               </tr>
               <tr class="line-error-row" *ngIf="line.error">
                 <td></td>
-                <td colspan="6"><span class="field-error">{{ line.error }}</span></td>
+                <td colspan="4"><span class="field-error">{{ line.error }}</span></td>
               </tr>
             </ng-container>
           </tbody>
