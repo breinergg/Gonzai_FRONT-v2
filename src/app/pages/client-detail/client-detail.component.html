@@ -52,7 +52,7 @@
           <span class="kpi-value">{{ s.saldo | cop }}</span>
           <span class="kpi-sub">{{ pendingCount }} {{ pendingCount === 1 ? 'venta pendiente' : 'ventas pendientes' }}</span>
         </div>
-        <div class="kpi-card kpi-dark" [class.kpi-ok]="s.enPazYSalvo" [class.kpi-bad]="!s.enPazYSalvo">
+        <div class="kpi-card" [class.kpi-ok]="s.enPazYSalvo" [class.kpi-bad]="!s.enPazYSalvo">
           <span class="kpi-label">Estado</span>
           <span class="kpi-value kpi-state">
             <svg *ngIf="s.enPazYSalvo" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>

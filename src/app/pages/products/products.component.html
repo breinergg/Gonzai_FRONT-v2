@@ -221,7 +221,6 @@
 <!-- CREATE MODAL -->
 <app-product-quick-create
   *ngIf="showCreateModal"
-  [withInitialStock]="true"
   [allowVariantTab]="false"
   (created)="onCreated($event)"
   (closed)="showCreateModal = false">

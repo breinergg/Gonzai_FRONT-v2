@@ -527,7 +527,7 @@
   align-items: center;
   gap: 0.3rem;
   font-size: 0.62rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--silver);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1641,8 +1641,8 @@ a.link-cell:hover .product-name, .link-cell:hover { text-decoration: underline; 
    ================================================ */
 /* Termina en transform:none para que los elementos position:fixed (modales, desplegables) usen el viewport */
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }

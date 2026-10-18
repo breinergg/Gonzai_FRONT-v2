@@ -23,6 +23,11 @@ a.btn-add { text-decoration: none; }
   align-items: center;
   gap: 0.4rem;
   font-size: 1rem;
+  font-weight: 800;
+}
+
+.kpi-card.kpi-bad {
+  border-color: rgba(220, 38, 38, 0.35);
 }
 
 .btn-pay-row {
