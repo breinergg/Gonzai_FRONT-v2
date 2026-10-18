@@ -1032,7 +1032,10 @@ a.link-cell:hover .product-name, .link-cell:hover { text-decoration: underline; 
    ================================================ */
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  top: var(--gz-overlay-inset, 0);
+  right: var(--gz-overlay-inset, 0);
+  bottom: var(--gz-overlay-inset, 0);
+  left: var(--gz-overlay-left, 0);
   background: rgba(0,0,0,0.5);
   backdrop-filter: blur(4px);
   display: flex;

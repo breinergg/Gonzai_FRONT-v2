@@ -152,6 +152,15 @@
   vertical-align: middle;
 }
 
+/* Tabla movimientos: columna stock compacta */
+.movements-table .col-stock {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+}
+
 @media (max-width: 1000px) {
   .info-grid { grid-template-columns: 1fr 1fr; }
   .info-name { grid-column: 1 / -1; }

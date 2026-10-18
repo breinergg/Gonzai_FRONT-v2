@@ -4,16 +4,20 @@
   animation: none;
 }
 
-.category-select-wrap { display: flex; gap: 0.4rem; align-items: center; }
+.category-select-wrap { display: flex; gap: 0.4rem; align-items: stretch; }
 .category-select-wrap .form-input { flex: 1; min-width: 0; }
 
 .btn-add-category {
-  width: 36px; height: 36px;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  aspect-ratio: 1;
+  align-self: stretch;
   flex-shrink: 0;
   background: linear-gradient(160deg, #2a2a2a 0%, #111111 50%, #2c2c2c 100%);
   color: rgba(255,255,255,0.75);
   border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

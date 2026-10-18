@@ -260,7 +260,7 @@
       <span class="empty-text">Este producto todavía no tiene movimientos.</span>
     </div>
     <div class="table-wrap" *ngIf="movements.length">
-      <table class="data-table">
+      <table class="data-table movements-table">
         <thead>
           <tr>
             <th>Fecha</th>
@@ -269,7 +269,7 @@
             <th>Motivo</th>
             <th>Cantidad</th>
             <th>Lote</th>
-            <th>Stock result.</th>
+            <th class="col-stock">Stock</th>
             <th>Usuario</th>
           </tr>
         </thead>
@@ -277,7 +277,7 @@
           <tr *ngFor="let m of movements.slice(0, movementsLimit)" class="table-row">
             <td>
               <div class="date-cell">
-                <span class="date-main">{{ m.fecha | fechaCo }}</span>
+                <span class="date-main">{{ m.fecha | fechaCo:'dmy' }}</span>
                 <span class="date-time">{{ m.fecha | fechaCo:'time' }}</span>
               </div>
             </td>
@@ -288,7 +288,7 @@
               {{ m.tipoMovimiento === 'entrada' ? '+' : '−' }}{{ m.cantidad }}
             </td>
             <td><span class="code-badge" *ngIf="m.loteCodigo">{{ m.loteCodigo }}</span><span class="cell-empty" *ngIf="!m.loteCodigo">—</span></td>
-            <td><span class="stock-num">{{ m.stockResultante }}</span></td>
+            <td class="col-stock"><span class="stock-num">{{ m.stockResultante }}</span></td>
             <td><span class="user-name">{{ m.usuarioNombre }}</span></td>
           </tr>
         </tbody>
