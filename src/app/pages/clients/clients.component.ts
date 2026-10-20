@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ClientService } from '../../core/services/client.service';
+import { ReportService } from '../../core/services/report.service';
+import { reportErrorMessage, saveReport } from '../../core/utils/file-download';
 import { ClienteSaldo, ClientResponse } from '../../core/models/client.model';
 import { parseApiError } from '../../core/utils/api-error';
 import { formatCOP, initials } from '../../core/utils/format';
@@ -17,6 +19,7 @@ import { CopPipe } from '../../shared/pipes/cop.pipe';
 })
 export class ClientsComponent implements OnInit {
   private readonly clientService = inject(ClientService);
+  private readonly reports = inject(ReportService);
   private readonly router = inject(Router);
 
   readonly initials = initials;
@@ -29,10 +32,12 @@ export class ClientsComponent implements OnInit {
   debtFilter = false;
   loading = true;
   error = '';
+  exporting = false;
+  exportError = '';
 
   showModal = false;
   editingClient: ClientResponse | null = null;
-  form = { nombre: '', telefono: '', direccion: '', activo: true };
+  form = { nombre: '', telefono: '', email: '', direccion: '', activo: true };
   saving = false;
   formError = '';
   fieldErrors: Record<string, string> = {};
@@ -43,6 +48,24 @@ export class ClientsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClients();
+  }
+
+  exportCartera(): void {
+    if (this.exporting) return;
+    this.exporting = true;
+    this.exportError = '';
+    this.reports.cartera().subscribe({
+      next: (file) => {
+        saveReport(file);
+        this.exporting = false;
+      },
+      error: (err) => {
+        void reportErrorMessage(err).then((message) => {
+          this.exportError = message;
+          this.exporting = false;
+        });
+      },
+    });
   }
 
   loadClients(): void {
@@ -77,7 +100,7 @@ export class ClientsComponent implements OnInit {
       if (this.statusFilter === 'inactivo' && c.activo) return false;
       if (this.debtFilter && !((this.saldos.get(c.id)?.saldo ?? 0) > 0)) return false;
       if (!term) return true;
-      return `${c.nombre} ${c.telefono ?? ''} ${c.direccion ?? ''}`.toLowerCase().includes(term);
+      return `${c.nombre} ${c.telefono ?? ''} ${c.email ?? ''} ${c.direccion ?? ''}`.toLowerCase().includes(term);
     });
   }
 
@@ -93,7 +116,7 @@ export class ClientsComponent implements OnInit {
   /* ── Crear / editar ─── */
   openCreateModal(): void {
     this.editingClient = null;
-    this.form = { nombre: '', telefono: '', direccion: '', activo: true };
+    this.form = { nombre: '', telefono: '', email: '', direccion: '', activo: true };
     this.formError = '';
     this.fieldErrors = {};
     this.showModal = true;
@@ -105,6 +128,7 @@ export class ClientsComponent implements OnInit {
     this.form = {
       nombre: client.nombre,
       telefono: client.telefono ?? '',
+      email: client.email ?? '',
       direccion: client.direccion ?? '',
       activo: client.activo,
     };
@@ -128,6 +152,7 @@ export class ClientsComponent implements OnInit {
     const base = {
       nombre: this.form.nombre.trim(),
       telefono: this.form.telefono.trim() || null,
+      email: this.form.email.trim() || null,
       direccion: this.form.direccion.trim() || null,
     };
     this.saving = true;

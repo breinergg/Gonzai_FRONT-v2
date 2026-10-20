@@ -1,0 +1,81 @@
+<div class="table-card section-card" *ngIf="loading || error">
+  <div class="table-loading" *ngIf="loading"><div class="spinner"></div><span>Cargando configuración...</span></div>
+  <div class="table-error" *ngIf="!loading && error">
+    <span>{{ error }}</span>
+    <button class="btn-retry" type="button" (click)="ngOnInit()">Reintentar</button>
+  </div>
+</div>
+
+<div class="table-card section-card" *ngIf="!loading && !error">
+  <div class="table-header">
+    <div class="table-header-left">
+      <div class="table-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </div>
+      <div class="title-stack">
+        <h3 class="table-header-title">Configuración</h3>
+        <span class="table-header-sub">Datos de la tienda que salen en los comprobantes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-body settings-body">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre comercial <span class="form-required">*</span></label>
+        <input class="form-input" [(ngModel)]="nombreComercial" maxlength="100" placeholder="GonzAI Ropa" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono <span class="form-optional">opcional</span></label>
+        <input class="form-input" [(ngModel)]="telefono" maxlength="20" placeholder="3000000000" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Ciudad <span class="form-optional">opcional</span></label>
+        <input class="form-input" [(ngModel)]="ciudad" maxlength="80" placeholder="Medellín" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo de respuesta <span class="form-optional">opcional</span></label>
+        <input class="form-input" type="email" [(ngModel)]="correoRespuesta" maxlength="100" placeholder="ventas@latienda.com" />
+        <span class="form-hint">Las respuestas del cliente llegan a este correo. El mensaje lo envía la plataforma.</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mensaje del comprobante <span class="form-optional">opcional</span></label>
+      <input class="form-input" [(ngModel)]="mensaje" maxlength="200" placeholder="Gracias por tu compra." />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Formato predeterminado</label>
+      <div class="chip-group">
+        <button type="button" class="chip" [class.chip-selected]="formato === 'termico'" (click)="formato = 'termico'">Térmico 80 mm</button>
+        <button type="button" class="chip" [class.chip-selected]="formato === 'media-carta'" (click)="formato = 'media-carta'">Media carta</button>
+      </div>
+      <span class="form-hint">Se usa al descargar, enviar o compartir si no eliges otro formato.</span>
+    </div>
+
+    <div class="alert alert-error" *ngIf="formError">{{ formError }}</div>
+    <div class="alert alert-success" *ngIf="saved">{{ saved }}</div>
+
+    <div class="settings-actions">
+      <button class="btn-primary" type="button" (click)="save()" [disabled]="saving">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
+    </div>
+
+    <div class="logo-block">
+      <span class="section-title">Logo</span>
+      <span class="form-hint">PNG, máximo 500 KB. Ningún lado puede pasar de 2000 px. Recomendado: 600×200 o 400×400. Se sube una sola vez.</span>
+      <div class="logo-row">
+        <img *ngIf="logoUrl" class="logo-preview" [src]="logoUrl" alt="Logo del negocio" />
+        <span class="cell-empty" *ngIf="!logoUrl">Sin logo</span>
+        <label class="btn-light logo-file">
+          {{ uploading ? 'Subiendo...' : 'Subir PNG' }}
+          <input type="file" accept="image/png,.png" (change)="onLogo($event)" [disabled]="uploading" />
+        </label>
+        <button class="btn-light" type="button" *ngIf="tieneLogo" (click)="removeLogo()" [disabled]="uploading">Quitar logo</button>
+      </div>
+      <div class="alert alert-error" *ngIf="logoError">{{ logoError }}</div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,22 @@
+.inventory-table-header { flex-wrap: nowrap; }
+.inventory-table-header .table-header-left { flex-shrink: 0; }
+
+.inventory-table-header .table-header-actions {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.inventory-table-header .table-search {
+  flex: 1 1 120px;
+  min-width: 110px;
+}
+
+.inventory-table-header .table-search input { width: 100%; min-width: 0; }
+.inventory-table-header .table-filter { flex-shrink: 1; min-width: 0; max-width: 160px; }
+.inventory-table-header .date-range-wrap { flex-shrink: 0; }
+.inventory-table-header .date-input { width: 96px; }
+.inventory-table-header .btn-add { flex-shrink: 0; }
+
 .inv-alert {
   margin: 0.9rem 1.25rem 0;
   display: flex;
@@ -8,6 +27,25 @@
 
 .inv-link { text-decoration: none; }
 .inv-link:hover { text-decoration: underline; }
+
+.th-tipo,
+.td-tipo {
+  width: 1%;
+  text-align: center;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+  overflow: visible;
+}
+
+.type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  cursor: default;
+}
 
 .qty-cell {
   font-family: 'Poppins', system-ui, sans-serif;

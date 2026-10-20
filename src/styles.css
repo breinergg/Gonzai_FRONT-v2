@@ -1,5 +1,53 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Detalle de venta: pagos con la misma altura de fila que prendas */
+app-sale-detail-modal .sale-pay-table.table-compact th,
+app-sale-detail-modal .sale-pay-table.table-compact td {
+  padding: 0.55rem 0.9rem;
+  vertical-align: middle;
+}
+
+app-sale-detail-modal .sale-pay-table .th-actions,
+app-sale-detail-modal .sale-pay-table .td-actions {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 0.75rem;
+}
+
+app-sale-detail-modal .sale-pay-table .action-btns.pay-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+app-sale-detail-modal .sale-pay-table .action-btns.pay-row-actions > .action-btn.btn-sm {
+  margin-left: 0;
+}
+
+app-sale-detail-modal .sale-pay-table app-receipt-actions.is-pay-row .btn-light {
+  height: 28px;
+  padding: 0 0.52rem;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+app-sale-detail-modal .sale-pay-table .action-btn.btn-sm {
+  width: 28px;
+  height: 28px;
+}
+
+app-sale-detail-modal .modal-footer-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+app-sale-detail-modal .modal-footer-group app-receipt-actions {
+  display: contents;
+}
+
 html, body {
   height: 100%;
   background: #F5F5F7;

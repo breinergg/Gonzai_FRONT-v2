@@ -111,8 +111,6 @@ export class UsersComponent implements OnInit {
   onRolChange(): void    { this.applyFilters(); }
 
   get totalUsers(): number   { return this.users.length; }
-  get activeUsers(): number  { return this.users.filter((u) => u.activo).length; }
-  get inactiveUsers(): number { return this.users.filter((u) => !u.activo).length; }
 
   openCreateModal(): void {
     this.editingUser = null;

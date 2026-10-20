@@ -12,11 +12,12 @@ import { CopPipe } from '../../pipes/cop.pipe';
 import { FechaCoPipe } from '../../pipes/fecha-co.pipe';
 import { AnnulModalComponent } from '../annul-modal/annul-modal.component';
 import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
+import { ReceiptActionsComponent } from '../receipt-actions/receipt-actions.component';
 
 @Component({
   selector: 'app-sale-detail-modal',
   standalone: true,
-  imports: [CommonModule, RouterModule, CopPipe, FechaCoPipe, AnnulModalComponent, PaymentModalComponent],
+  imports: [CommonModule, RouterModule, CopPipe, FechaCoPipe, AnnulModalComponent, PaymentModalComponent, ReceiptActionsComponent],
   templateUrl: './sale-detail-modal.component.html',
   styleUrls: ['../../styles/gz-ui.css', './sale-detail-modal.component.css'],
 })

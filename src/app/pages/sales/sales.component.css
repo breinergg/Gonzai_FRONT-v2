@@ -2,11 +2,31 @@ a.btn-add { text-decoration: none; }
 
 /* Sin sombra inferior: no opaca la fila de totales debajo del header */
 .sales-table-header {
+  flex-wrap: nowrap;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.1) inset,
     0 -1px 0 rgba(0, 0, 0, 0.5) inset;
   z-index: 0;
 }
+
+.sales-table-header .table-header-left { flex-shrink: 0; }
+
+.sales-table-header .table-header-actions {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.sales-table-header .table-search {
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+.sales-table-header .table-search input { width: 100%; min-width: 0; }
+
+.sales-table-header .date-range-wrap { flex-shrink: 0; }
+.sales-table-header .date-input { width: 96px; }
+.sales-table-header .header-chip,
+.sales-table-header .btn-add { flex-shrink: 0; }
 
 .annulled-toggle {
   display: inline-flex;

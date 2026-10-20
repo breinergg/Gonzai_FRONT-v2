@@ -39,15 +39,15 @@
             <label class="form-label">Nombre del lote <span class="form-optional">opcional</span></label>
             <input class="form-input" [(ngModel)]="nombre" maxlength="100" placeholder="Ej: Pedido temporada diciembre" />
           </div>
-          <div class="form-group">
+          <div class="form-group span-3">
             <label class="form-label">N° factura <span class="form-optional">opcional</span></label>
             <input class="form-input" [(ngModel)]="numeroFactura" maxlength="50" placeholder="FAC-001" />
           </div>
-          <div class="form-group">
+          <div class="form-group span-3">
             <label class="form-label">Fecha</label>
             <input class="form-input" type="date" [(ngModel)]="fecha" [max]="today" />
           </div>
-          <div class="form-group">
+          <div class="form-group span-3">
             <label class="form-label">Costo de envío</label>
             <div class="currency-wrap">
               <span class="currency-prefix">$</span>
@@ -68,11 +68,6 @@
             </svg>
           </div>
           <h3 class="table-header-title">Prendas del lote</h3>
-          <div class="header-stats">
-            <span class="header-stat"><span class="header-stat-num">{{ filledLines.length }}</span> líneas</span>
-            <span class="header-stat-divider"></span>
-            <span class="header-stat"><span class="header-stat-num">{{ totalUnidades }}</span> prendas</span>
-          </div>
         </div>
         <div class="table-header-actions">
           <button class="btn-add" *ngIf="isAdmin" (click)="openQuickCreate()">

@@ -100,34 +100,6 @@
   color: var(--white-pure);
 }
 
-.header-stats {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-left: 0.4rem;
-  padding-left: 0.75rem;
-  border-left: 1px solid rgba(255,255,255,0.12);
-}
-
-.header-stat {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.02em;
-}
-
-.header-stat-num {
-  font-family: 'Poppins', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  margin-right: 0.15rem;
-  color: rgba(255,255,255,0.85);
-}
-
-.header-stat-divider { width: 1px; height: 12px; background: rgba(255,255,255,0.12); }
-.header-stat-active  .header-stat-num { color: #34d399; }
-.header-stat-inactive .header-stat-num { color: #9ca3af; }
-
 .table-header-actions {
   display: flex;
   align-items: center;

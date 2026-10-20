@@ -88,6 +88,7 @@
           <ng-container *ngIf="result.saldoPendienteVenta > 0">Saldo pendiente de la venta: <strong>{{ result.saldoPendienteVenta | cop }}</strong></ng-container>
           <ng-container *ngIf="result.saldoPendienteVenta <= 0"><strong class="ok-text">La venta quedó pagada.</strong></ng-container>
         </p>
+        <app-receipt-actions tipo="abono" [documentoId]="result.id" [clienteId]="result.clienteId"></app-receipt-actions>
       </div>
       <div class="modal-footer">
         <button class="btn-primary" (click)="closed.emit()">Listo</button>

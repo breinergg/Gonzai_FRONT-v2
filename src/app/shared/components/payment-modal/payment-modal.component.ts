@@ -8,12 +8,13 @@ import { parseApiError } from '../../../core/utils/api-error';
 import { formatCOP, toApiDate, todayColombia } from '../../../core/utils/format';
 import { CopPipe } from '../../pipes/cop.pipe';
 import { FechaCoPipe } from '../../pipes/fecha-co.pipe';
+import { ReceiptActionsComponent } from '../receipt-actions/receipt-actions.component';
 
 /** Abono a una venta concreta. El monto llega prellenado con el saldo pendiente. */
 @Component({
   selector: 'app-payment-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, CopPipe, FechaCoPipe],
+  imports: [CommonModule, FormsModule, CopPipe, FechaCoPipe, ReceiptActionsComponent],
   templateUrl: './payment-modal.component.html',
   styleUrls: ['../../styles/gz-ui.css', './payment-modal.component.css'],
 })

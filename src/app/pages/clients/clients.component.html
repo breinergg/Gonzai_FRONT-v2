@@ -1,6 +1,6 @@
 <!-- CLIENTS TABLE CARD -->
 <div class="table-card">
-  <div class="table-header">
+  <div class="table-header clients-table-header">
     <div class="table-header-left">
       <div class="table-header-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -33,6 +33,11 @@
         Nuevo Cliente
       </button>
     </div>
+  </div>
+
+  <div class="alert alert-warn report-alert" *ngIf="exportError">
+    <span>{{ exportError }}</span>
+    <button class="btn-link" type="button" (click)="exportError = ''">Cerrar</button>
   </div>
 
   <div *ngIf="loading" class="table-loading"><div class="spinner"></div><span>Cargando clientes...</span></div>
@@ -110,8 +115,14 @@
     </table>
   </div>
 
-  <div class="table-footer" *ngIf="!loading && !error && filteredClients.length > 0">
+  <div class="table-footer" *ngIf="!loading && !error">
     <span class="table-count">{{ filteredClients.length }} de {{ clients.length }} clientes</span>
+    <div class="table-export">
+      <button class="btn-light" type="button" (click)="exportCartera()" [disabled]="exporting">
+        <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="#217346" d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 2z"/><path fill="#185C37" d="M14.5 2v6.5H21L14.5 2z"/><path fill="#fff" d="M8.1 11.1h1.55l1.35 2.25 1.35-2.25h1.55l-2.1 3.25 2.2 3.35h-1.6l-1.4-2.3-1.4 2.3H7.95l2.2-3.35-2.05-3.25z"/></svg>
+        {{ exporting ? 'Exportando...' : 'Exportar Deudas' }}
+      </button>
+    </div>
   </div>
 </div>
 
@@ -137,10 +148,16 @@
           <span class="field-error" *ngIf="fieldErrors['telefono']">{{ fieldErrors['telefono'] }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label">Dirección <span class="form-optional">opcional</span></label>
-          <input type="text" class="form-input" placeholder="Calle, barrio" [(ngModel)]="form.direccion" maxlength="150" />
-          <span class="field-error" *ngIf="fieldErrors['direccion']">{{ fieldErrors['direccion'] }}</span>
+          <label class="form-label">Correo <span class="form-optional">opcional</span></label>
+          <input type="email" class="form-input" [class.input-invalid]="fieldErrors['email']" placeholder="cliente@correo.com" [(ngModel)]="form.email" maxlength="100" />
+          <span class="form-hint">Se precarga al enviar el comprobante. Se puede cambiar en ese momento.</span>
+          <span class="field-error" *ngIf="fieldErrors['email']">{{ fieldErrors['email'] }}</span>
         </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección <span class="form-optional">opcional</span></label>
+        <input type="text" class="form-input" placeholder="Calle, barrio" [(ngModel)]="form.direccion" maxlength="150" />
+        <span class="field-error" *ngIf="fieldErrors['direccion']">{{ fieldErrors['direccion'] }}</span>
       </div>
       <label class="form-group form-toggle-group" *ngIf="editingClient">
         <span class="toggle-switch">

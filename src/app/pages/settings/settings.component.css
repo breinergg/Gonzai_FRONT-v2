@@ -1,0 +1,39 @@
+.title-stack { display: flex; flex-direction: column; min-width: 0; }
+
+.settings-body { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.settings-actions { display: flex; justify-content: flex-end; }
+
+.logo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid #EFEFEF;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.logo-preview {
+  max-width: 220px;
+  max-height: 80px;
+  object-fit: contain;
+  background: var(--white-matte);
+  border: 1px solid #E4E4E4;
+  border-radius: 10px;
+  padding: 0.35rem;
+}
+
+.logo-file { position: relative; overflow: hidden; cursor: pointer; }
+.logo-file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.logo-file input:disabled { cursor: not-allowed; }

@@ -2,6 +2,7 @@ export interface ClientResponse {
   id: number;
   nombre: string;
   telefono: string | null;
+  email: string | null;
   direccion: string | null;
   activo: boolean;
   fechaCreacion: string;
@@ -10,12 +11,14 @@ export interface ClientResponse {
 export interface ClientCreateRequest {
   nombre: string;
   telefono: string | null;
+  email: string | null;
   direccion: string | null;
 }
 
 export interface ClientUpdateRequest {
   nombre: string;
   telefono: string | null;
+  email: string | null;
   direccion: string | null;
   activo: boolean;
 }

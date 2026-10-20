@@ -5,6 +5,8 @@ import { forkJoin } from 'rxjs';
 import { ClientService } from '../../core/services/client.service';
 import { SaleService } from '../../core/services/sale.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { ReportService } from '../../core/services/report.service';
+import { reportErrorMessage, saveReport } from '../../core/utils/file-download';
 import { AuthService } from '../../core/services/auth.service';
 import { ClienteSaldo, ClientResponse, VentaPendiente } from '../../core/models/client.model';
 import { SaleResponse, estadoPagoClass } from '../../core/models/sale.model';
@@ -17,13 +19,14 @@ import { FechaCoPipe } from '../../shared/pipes/fecha-co.pipe';
 import { PaymentModalComponent } from '../../shared/components/payment-modal/payment-modal.component';
 import { SaleDetailModalComponent } from '../../shared/components/sale-detail-modal/sale-detail-modal.component';
 import { AnnulModalComponent } from '../../shared/components/annul-modal/annul-modal.component';
+import { ReceiptActionsComponent } from '../../shared/components/receipt-actions/receipt-actions.component';
 
 type HistoryTab = 'ventas' | 'pagos';
 
 @Component({
   selector: 'app-client-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, CopPipe, FechaCoPipe, PaymentModalComponent, SaleDetailModalComponent, AnnulModalComponent],
+  imports: [CommonModule, RouterModule, CopPipe, FechaCoPipe, PaymentModalComponent, SaleDetailModalComponent, AnnulModalComponent, ReceiptActionsComponent],
   templateUrl: './client-detail.component.html',
   styleUrls: ['../../shared/styles/gz-ui.css', './client-detail.component.css'],
 })
@@ -33,6 +36,7 @@ export class ClientDetailComponent implements OnInit {
   private readonly clientService = inject(ClientService);
   private readonly saleService = inject(SaleService);
   private readonly paymentService = inject(PaymentService);
+  private readonly reports = inject(ReportService);
   private readonly auth = inject(AuthService);
 
   readonly isAdmin = this.auth.isAdmin();
@@ -52,6 +56,11 @@ export class ClientDetailComponent implements OnInit {
   historyError = '';
   tab: HistoryTab = 'ventas';
   showAnnulled = false;
+  incluirAnulados = false;
+  exportingEstado = false;
+  exportingAbonos = false;
+  estadoError = '';
+  abonosError = '';
 
   payingSale: VentaPendiente | null = null;
   detailId: number | null = null;
@@ -137,6 +146,45 @@ export class ClientDetailComponent implements OnInit {
 
   get pendingCount(): number {
     return this.saldo?.ventasPendientes.length ?? 0;
+  }
+
+  exportEstado(): void {
+    if (this.exportingEstado || !this.client) return;
+    this.exportingEstado = true;
+    this.estadoError = '';
+    this.reports.estadoCuenta(this.client.id).subscribe({
+      next: (file) => {
+        saveReport(file);
+        this.exportingEstado = false;
+      },
+      error: (err) => {
+        void reportErrorMessage(err, 'No se pudo descargar el estado de cuenta.').then((message) => {
+          this.estadoError = message;
+          this.exportingEstado = false;
+        });
+      },
+    });
+  }
+
+  exportAbonos(): void {
+    if (this.exportingAbonos || !this.client) return;
+    this.exportingAbonos = true;
+    this.abonosError = '';
+    this.reports.abonos({
+      clienteId: this.client.id,
+      incluirAnulados: this.incluirAnulados,
+    }).subscribe({
+      next: (file) => {
+        saveReport(file);
+        this.exportingAbonos = false;
+      },
+      error: (err) => {
+        void reportErrorMessage(err, 'No se pudo descargar los abonos.').then((message) => {
+          this.abonosError = message;
+          this.exportingAbonos = false;
+        });
+      },
+    });
   }
 
   /* ── Abonos ─── */

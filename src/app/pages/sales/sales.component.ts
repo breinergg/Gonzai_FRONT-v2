@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SaleService } from '../../core/services/sale.service';
+import { ReportService } from '../../core/services/report.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SaleResponse, VentaMensualResumen, estadoPagoClass } from '../../core/models/sale.model';
 import { isAnulado } from '../../core/models/common.model';
 import { parseApiError } from '../../core/utils/api-error';
+import { DATE_RANGE_ERROR, invalidDateRange, reportErrorMessage, saveReport } from '../../core/utils/file-download';
 import { CopPipe } from '../../shared/pipes/cop.pipe';
 import { FechaCoPipe } from '../../shared/pipes/fecha-co.pipe';
 import { SaleDetailModalComponent } from '../../shared/components/sale-detail-modal/sale-detail-modal.component';
@@ -20,6 +22,7 @@ import { SaleDetailModalComponent } from '../../shared/components/sale-detail-mo
 })
 export class SalesComponent implements OnInit {
   private readonly saleService = inject(SaleService);
+  private readonly reports = inject(ReportService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -34,10 +37,13 @@ export class SalesComponent implements OnInit {
   desde = '';
   hasta = '';
   soloPendientes = false;
+  incluirAnuladas = false;
   showAnnulled = true;
 
   loading = true;
   error = '';
+  exporting = false;
+  exportError = '';
 
   resumen: VentaMensualResumen | null = null;
 
@@ -96,7 +102,36 @@ export class SalesComponent implements OnInit {
   clearDates(): void {
     this.desde = '';
     this.hasta = '';
+    this.exportError = '';
     this.load();
+  }
+
+  exportExcel(): void {
+    if (this.exporting) return;
+    if (invalidDateRange(this.desde, this.hasta)) {
+      this.exportError = DATE_RANGE_ERROR;
+      return;
+    }
+
+    this.exporting = true;
+    this.exportError = '';
+    this.reports.libroVentas({
+      desde: this.desde,
+      hasta: this.hasta,
+      soloPendientes: this.soloPendientes,
+      incluirAnuladas: this.incluirAnuladas,
+    }).subscribe({
+      next: (file) => {
+        saveReport(file);
+        this.exporting = false;
+      },
+      error: (err) => {
+        void reportErrorMessage(err).then((message) => {
+          this.exportError = message;
+          this.exporting = false;
+        });
+      },
+    });
   }
 
   /* ── Totales (sin anuladas) ─── */

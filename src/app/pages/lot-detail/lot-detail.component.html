@@ -32,7 +32,7 @@
         <span class="status-badge doc-anulada" *ngIf="isAnulado(l.estado)">Anulado</span>
         <ng-container *ngIf="!isAnulado(l.estado)">
           <span class="status-badge status-active" *ngIf="l.inversionRecuperada">Inversión recuperada</span>
-          <span class="status-badge pay-parcial" *ngIf="!l.inversionRecuperada">{{ pct(l.porcentajeRecuperado) }} % recuperado</span>
+          <span class="status-badge lot-recover" *ngIf="!l.inversionRecuperada">{{ pct(l.porcentajeRecuperado) }} % recuperado</span>
         </ng-container>
         <a class="btn-add" [routerLink]="['/purchases']" [queryParams]="{ ver: l.compraProveedorId }">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -45,7 +45,7 @@
       <div class="alert alert-warn" *ngIf="isAnulado(l.estado)">Este lote fue anulado: sus valores no suman en los totales.</div>
       <p class="lot-desc" *ngIf="l.descripcion">{{ l.descripcion }}</p>
 
-      <div class="kpi-grid">
+      <div class="kpi-grid lot-kpis">
         <div class="kpi-card">
           <span class="kpi-label">Inversión en prendas</span>
           <span class="kpi-value">{{ l.subtotalProductos | cop }}</span>
@@ -66,7 +66,7 @@
           <span class="kpi-value">{{ l.gananciaBruta | cop }}</span>
           <span class="kpi-sub">Ingresos − costo vendido ({{ l.costoVendido | cop }})</span>
         </div>
-        <div class="kpi-card kpi-dark" [class.kpi-ok]="l.gananciaNeta >= 0" [class.kpi-bad]="l.gananciaNeta < 0">
+        <div class="kpi-card kpi-net" [class.kpi-ok]="l.gananciaNeta >= 0" [class.kpi-bad]="l.gananciaNeta < 0">
           <span class="kpi-label">Ganancia neta</span>
           <span class="kpi-value">{{ l.gananciaNeta | cop }}</span>
           <span class="kpi-sub">Ganancia bruta − envío</span>
@@ -83,7 +83,7 @@
           <div class="lot-progress-foot">
             <span>{{ l.unidadesVendidas }} vendidas</span>
             <span>{{ l.unidadesDisponibles }} disponibles</span>
-            <span *ngIf="l.unidadesAjustadas">{{ l.unidadesAjustadas }} ajustadas</span>
+            <span *ngIf="l.unidadesAjustadas" title="Salieron por un ajuste de inventario, no por una venta">{{ l.unidadesAjustadas }} por ajuste</span>
           </div>
         </div>
         <div class="lot-progress-box">
@@ -119,19 +119,19 @@
       <span class="empty-text">Este lote no tiene prendas.</span>
     </div>
 
-    <div class="table-wrap" *ngIf="l.lineas.length">
-      <table class="data-table">
+    <div class="table-wrap lot-lines-wrap" *ngIf="l.lineas.length">
+      <table class="data-table lot-lines">
         <thead>
           <tr>
-            <th>Prenda</th>
-            <th class="th-num">Costo unit.</th>
-            <th class="th-num">Compradas</th>
-            <th>Vendidas</th>
-            <th class="th-num">Disponibles</th>
-            <th class="th-num hide-sm">Ajustadas</th>
-            <th class="th-num">Ingresos <span class="info-tip" [title]="ingresosTooltip">i</span></th>
-            <th class="th-num hide-sm">Costo vendido</th>
-            <th class="th-num">Ganancia bruta</th>
+            <th class="col-prenda" data-tip="Prenda">Prenda</th>
+            <th class="th-num col-money" data-tip="Costo unitario">C. unit.</th>
+            <th class="th-num col-count" data-tip="Compradas">Comp.</th>
+            <th class="th-num col-sold" data-tip="Vendidas">Vend.</th>
+            <th class="th-num col-count" data-tip="Stock">Stock</th>
+            <th class="th-num col-count hide-sm" data-tip="Ajuste de inventario">Ajuste</th>
+            <th class="th-num col-money" data-tip="Ingresos">Ingresos <span class="info-tip" [title]="ingresosTooltip">i</span></th>
+            <th class="th-num col-money hide-sm" data-tip="Costo vendido">Costo</th>
+            <th class="th-num col-money" data-tip="Ganancia bruta">Ganancia</th>
           </tr>
         </thead>
         <tbody>
@@ -143,9 +143,9 @@
               </div>
             </td>
             <td class="td-num price-cell">{{ ln.costoUnitario | cop }}</td>
-            <td class="td-num">{{ ln.comprado }}</td>
-            <td>
-              <div class="stock-cell">
+            <td class="td-num col-bought">{{ ln.comprado }}</td>
+            <td class="td-num col-sold">
+              <div class="sold-cell">
                 <div class="stock-bar-wrap"><div class="stock-bar" [ngClass]="lineBarClass(ln)" [style.width.%]="lineSoldPct(ln)"></div></div>
                 <span class="stock-num">{{ ln.vendido }}</span>
               </div>
@@ -161,8 +161,8 @@
           <tr>
             <td>Total</td>
             <td></td>
-            <td class="td-num">{{ totals.comprado }}</td>
-            <td>{{ totals.vendido }}</td>
+            <td class="td-num col-bought">{{ totals.comprado }}</td>
+            <td class="td-num col-sold">{{ totals.vendido }}</td>
             <td class="td-num">{{ totals.disponible }}</td>
             <td class="td-num hide-sm">{{ totals.ajustado || '—' }}</td>
             <td class="td-num">{{ totals.ingresos | cop }}</td>

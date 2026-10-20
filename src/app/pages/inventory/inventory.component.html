@@ -1,6 +1,6 @@
 <!-- INVENTORY TABLE CARD -->
 <div class="table-card">
-  <div class="table-header">
+  <div class="table-header inventory-table-header">
     <div class="table-header-left">
       <div class="table-header-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -9,13 +9,6 @@
         </svg>
       </div>
       <h3 class="table-header-title">Inventario</h3>
-      <div class="header-stats">
-        <span class="header-stat"><span class="header-stat-num">{{ filtered.length }}</span> movimientos</span>
-        <span class="header-stat-divider"></span>
-        <span class="header-stat header-stat-ok"><span class="header-stat-num">+{{ totalEntradas }}</span> entradas</span>
-        <span class="header-stat-divider"></span>
-        <span class="header-stat header-stat-out"><span class="header-stat-num">−{{ totalSalidas }}</span> salidas</span>
-      </div>
     </div>
     <div class="table-header-actions">
       <div class="table-search">
@@ -74,7 +67,7 @@
         <tr>
           <th>Fecha</th>
           <th>Prenda</th>
-          <th>Tipo</th>
+          <th class="th-tipo">Tipo</th>
           <th>Motivo</th>
           <th class="th-num">Cantidad</th>
           <th class="th-num">Stock</th>
@@ -87,24 +80,22 @@
         <tr *ngFor="let m of visible" class="table-row">
           <td>
             <div class="date-cell">
-              <span class="date-main">{{ m.fecha | fechaCo }}</span>
+              <span class="date-main">{{ m.fecha | fechaCo:'dmy' }}</span>
               <span class="date-time">{{ m.fecha | fechaCo:'time' }}</span>
             </div>
           </td>
           <td>
             <div class="product-cell">
-              <div class="product-avatar avatar-sm">{{ initials(m.productoNombre) }}</div>
               <div class="product-info">
                 <a class="product-name inv-link" [routerLink]="['/products', m.productoId]">{{ m.productoNombre }}</a>
                 <span class="product-date">{{ m.varianteNombre || 'Única' }}</span>
               </div>
             </div>
           </td>
-          <td>
-            <span class="type-badge" [ngClass]="isEntrada(m) ? 'type-entrada' : 'type-salida'">
-              <svg *ngIf="isEntrada(m)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-              <svg *ngIf="!isEntrada(m)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-              {{ isEntrada(m) ? 'Entrada' : 'Salida' }}
+          <td class="td-tipo">
+            <span class="type-icon" [ngClass]="isEntrada(m) ? 'type-entrada' : 'type-salida'" [attr.title]="isEntrada(m) ? 'Entrada' : 'Salida'">
+              <svg *ngIf="isEntrada(m)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+              <svg *ngIf="!isEntrada(m)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
             </span>
           </td>
           <td>
@@ -117,7 +108,9 @@
           <td class="td-num price-cell hide-sm" *ngIf="isAdmin">{{ m.costoUnitario | cop }}</td>
           <td class="hide-sm">
             <a class="code-badge inv-link" *ngIf="m.loteCodigo && m.compraProveedorId" [routerLink]="['/lots', m.compraProveedorId]">{{ m.loteCodigo }}</a>
-            <span class="cell-empty" *ngIf="!m.loteCodigo">—</span>
+            <span class="code-badge" *ngIf="m.loteCodigo && !m.compraProveedorId">{{ m.loteCodigo }}</span>
+            <span class="cell-sub" *ngIf="!m.loteCodigo && m.origen === 'InventarioInicial'">Inventario inicial</span>
+            <span class="cell-empty" *ngIf="!m.loteCodigo && m.origen !== 'InventarioInicial'">—</span>
           </td>
           <td class="hide-sm">
             <div class="product-info">
@@ -216,8 +209,8 @@
             <input type="radio" name="origen" [value]="originKey(a)" [(ngModel)]="origen" />
             <span class="origin-main">
               {{ originLabel(a) }}
-              <small *ngIf="a.proveedorNombre">{{ a.proveedorNombre }} · {{ a.fechaIngreso | fechaCo }}</small>
-              <small *ngIf="!a.proveedorNombre">{{ a.fechaIngreso | fechaCo }}</small>
+              <small *ngIf="a.proveedorNombre">{{ a.proveedorNombre }} · {{ a.fechaIngreso | fechaCo:'dmy' }}</small>
+              <small *ngIf="!a.proveedorNombre">{{ a.fechaIngreso | fechaCo:'dmy' }}</small>
             </span>
             <span class="origin-qty">{{ a.cantidadDisponible }} disp.<ng-container *ngIf="isAdmin"> · {{ a.costoUnitario | cop }}</ng-container></span>
           </label>

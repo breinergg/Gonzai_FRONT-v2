@@ -1,0 +1,59 @@
+:host { display: inline-flex; flex: 0 0 auto; width: max-content; max-width: 100%; }
+
+:host(.is-compact:not(.is-pay-row)) .btn-light {
+  padding: 0.1rem 0.42rem;
+  font-size: 0.64rem;
+  line-height: 1.1;
+  gap: 0.22rem;
+  border-radius: 6px;
+}
+
+:host(.is-pay-row) {
+  display: contents;
+}
+
+:host(.is-pay-row) .btn-light {
+  gap: 0.28rem;
+  border-radius: 7px;
+}
+
+.receipt-overlay {
+  z-index: 1300;
+  top: var(--gz-overlay-inset, 0.75rem);
+  right: var(--gz-overlay-inset, 0.75rem);
+  bottom: var(--gz-overlay-inset, 0.75rem);
+  left: var(--gz-overlay-left, 0.75rem);
+}
+
+.receipt-download {
+  width: 100%;
+  justify-content: center;
+}
+
+.receipt-extra {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.receipt-extra .btn-light { flex: 1; justify-content: center; }
+
+.receipt-mail {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.receipt-mail .form-input { flex: 1; min-width: 0; }
+
+.receipt-share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: var(--black-deep);
+}
+
+.receipt-share p { margin: 0; }
+.receipt-expire { color: var(--mid-metal); font-weight: 600; }
+.receipt-message { white-space: pre-wrap; color: var(--charcoal); }

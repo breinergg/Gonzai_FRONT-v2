@@ -270,6 +270,7 @@
 }
 
 .header-chip:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.85); }
+.header-chip:disabled { opacity: 0.5; cursor: not-allowed; }
 .header-chip.chip-on {
   background: rgba(251,191,36,0.14);
   border-color: rgba(251,191,36,0.4);
@@ -365,6 +366,11 @@
 
 .btn-add:active { transform: translateY(0); }
 .btn-add:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.06);
+  box-shadow: none;
+}
 
 /* Botón claro sobre fondo blanco (barras de herramientas internas) */
 .btn-light {
@@ -936,6 +942,37 @@ a.link-cell:hover .product-name, .link-cell:hover { text-decoration: underline; 
 
 .table-count { font-size: 0.7rem; color: var(--silver); font-weight: 500; }
 
+.table-export {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.table-export-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  background: var(--white-pure);
+  color: var(--mid-metal);
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+
+.table-export-chip:hover { background: var(--white-soft); border-color: #CCC; color: var(--black-deep); }
+.table-export-chip.chip-on {
+  background: #fffbeb;
+  border-color: rgba(217, 119, 6, 0.4);
+  color: #b45309;
+}
+.table-export-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .table-loading {
   display: flex;
   flex-direction: column;
@@ -1018,6 +1055,12 @@ a.link-cell:hover .product-name, .link-cell:hover { text-decoration: underline; 
 .alert-success { background: #ecfdf5; color: #047857; border: 1px solid rgba(5,150,105,0.2); }
 .alert-warn    { background: #fffbeb; color: #b45309; border: 1px solid rgba(217,119,6,0.25); }
 .alert-info    { background: var(--white-matte); color: var(--mid-metal); border: 1px solid #E0E0E0; }
+
+.report-alert {
+  margin: 0.75rem 1.25rem 0;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .field-error {
   font-size: 0.68rem;

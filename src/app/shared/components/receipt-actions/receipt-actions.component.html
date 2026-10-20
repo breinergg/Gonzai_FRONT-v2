@@ -1,0 +1,60 @@
+<button type="button" class="btn-light" (click)="open($event)">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  {{ label }}
+</button>
+
+<div #sheet class="modal-overlay overlay-top receipt-overlay" *ngIf="openModal" (click)="close()">
+  <div class="modal-card modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <span class="modal-title">Comprobante</span>
+          <span class="modal-subtitle">{{ tipo === 'venta' ? 'Venta' : 'Abono' }} #{{ documentoId }}</span>
+        </div>
+      </div>
+      <button class="modal-close" type="button" (click)="close()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Formato</label>
+        <div class="chip-group">
+          <button type="button" class="chip" [class.chip-selected]="formato === 'termico'" (click)="formato = 'termico'" [disabled]="busy">Térmico</button>
+          <button type="button" class="chip" [class.chip-selected]="formato === 'media-carta'" (click)="formato = 'media-carta'" [disabled]="busy">Media carta</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary receipt-download" (click)="download()" [disabled]="busy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        {{ busy ? 'Espera...' : 'Descargar' }}
+      </button>
+
+      <div class="receipt-extra">
+        <button type="button" class="btn-light" (click)="whatsapp(false)" [disabled]="busy">WhatsApp</button>
+        <button type="button" class="btn-light" (click)="toggleMail()" [disabled]="busy">Enviar por correo</button>
+      </div>
+
+      <div class="receipt-mail" *ngIf="showMail">
+        <input class="form-input" type="email" [(ngModel)]="correo" placeholder="cliente@correo.com" maxlength="100" />
+        <button type="button" class="btn-primary" (click)="sendMail()" [disabled]="busy">{{ busy ? 'Enviando...' : 'Enviar' }}</button>
+      </div>
+
+      <div class="alert alert-success" *ngIf="notice">{{ notice }}</div>
+      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+
+      <div class="receipt-share" *ngIf="share">
+        <p *ngIf="share.whatsappUrl">Se abrió WhatsApp con el mensaje y el enlace del comprobante.</p>
+        <p *ngIf="!share.whatsappUrl">Este cliente no tiene un teléfono usable. Copia el enlace o descarga el PDF.</p>
+        <p class="receipt-expire">El enlace vence el {{ share.expiraEn | fechaCo:'datetime' }}.</p>
+        <p class="receipt-message" *ngIf="!share.whatsappUrl">{{ share.mensaje }}</p>
+        <button type="button" class="btn-light" *ngIf="!share.whatsappUrl" (click)="copyLink()">{{ copied ? 'Enlace copiado' : 'Copiar enlace' }}</button>
+        <button type="button" class="btn-link" (click)="whatsapp(true)" [disabled]="busy">Generar enlace nuevo</button>
+      </div>
+    </div>
+  </div>
+</div>

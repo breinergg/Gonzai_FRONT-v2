@@ -267,7 +267,7 @@
             <th>Variante</th>
             <th>Tipo</th>
             <th>Motivo</th>
-            <th>Cantidad</th>
+            <th class="col-qty">Cantidad</th>
             <th>Lote</th>
             <th class="col-stock">Stock</th>
             <th>Usuario</th>
@@ -284,10 +284,14 @@
             <td><span class="variant-name">{{ m.varianteNombre }}</span></td>
             <td><span class="type-badge" [ngClass]="m.tipoMovimiento === 'entrada' ? 'type-entrada' : 'type-salida'">{{ m.tipoMovimiento }}</span></td>
             <td><span class="desc-cell" [title]="m.descripcion || ''">{{ motivoLabel(m.motivo) }}</span></td>
-            <td class="price-cell" [class.price-ok]="m.tipoMovimiento === 'entrada'" [class.price-bad]="m.tipoMovimiento !== 'entrada'">
+            <td class="price-cell col-qty" [class.price-ok]="m.tipoMovimiento === 'entrada'" [class.price-bad]="m.tipoMovimiento !== 'entrada'">
               {{ m.tipoMovimiento === 'entrada' ? '+' : '−' }}{{ m.cantidad }}
             </td>
-            <td><span class="code-badge" *ngIf="m.loteCodigo">{{ m.loteCodigo }}</span><span class="cell-empty" *ngIf="!m.loteCodigo">—</span></td>
+            <td>
+              <span class="code-badge" *ngIf="m.loteCodigo">{{ m.loteCodigo }}</span>
+              <span class="cell-sub" *ngIf="!m.loteCodigo && m.origen === 'InventarioInicial'">Inventario inicial</span>
+              <span class="cell-empty" *ngIf="!m.loteCodigo && m.origen !== 'InventarioInicial'">—</span>
+            </td>
             <td class="col-stock"><span class="stock-num">{{ m.stockResultante }}</span></td>
             <td><span class="user-name">{{ m.usuarioNombre }}</span></td>
           </tr>

@@ -17,6 +17,7 @@ import { initials, toApiDate, todayColombia } from '../../core/utils/format';
 import { CopPipe } from '../../shared/pipes/cop.pipe';
 import { FechaCoPipe } from '../../shared/pipes/fecha-co.pipe';
 import { VariantSelectorComponent } from '../../shared/components/variant-selector/variant-selector.component';
+import { ReceiptActionsComponent } from '../../shared/components/receipt-actions/receipt-actions.component';
 
 interface CartItem {
   variant: ProductVariant;
@@ -33,7 +34,7 @@ type PayMode = 'todo' | 'abono' | 'debe';
 @Component({
   selector: 'app-sale-new',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CopPipe, FechaCoPipe, VariantSelectorComponent],
+  imports: [CommonModule, FormsModule, RouterModule, CopPipe, FechaCoPipe, VariantSelectorComponent, ReceiptActionsComponent],
   templateUrl: './sale-new.component.html',
   styleUrls: ['../../shared/styles/gz-ui.css', './sale-new.component.css'],
 })
@@ -63,7 +64,7 @@ export class SaleNewComponent implements OnInit {
   clientSaldo: ClienteSaldo | null = null;
 
   showClientModal = false;
-  clientForm = { nombre: '', telefono: '', direccion: '' };
+  clientForm = { nombre: '', telefono: '', email: '', direccion: '' };
   clientSaving = false;
   clientError = '';
   clientFieldErrors: Record<string, string> = {};
@@ -132,7 +133,7 @@ export class SaleNewComponent implements OnInit {
   }
 
   openClientModal(): void {
-    this.clientForm = { nombre: this.clientTerm.trim(), telefono: '', direccion: '' };
+    this.clientForm = { nombre: this.clientTerm.trim(), telefono: '', email: '', direccion: '' };
     this.clientError = '';
     this.clientFieldErrors = {};
     this.clientOpen = false;
@@ -149,6 +150,7 @@ export class SaleNewComponent implements OnInit {
     this.clientService.create({
       nombre: this.clientForm.nombre.trim(),
       telefono: this.clientForm.telefono.trim() || null,
+      email: this.clientForm.email.trim() || null,
       direccion: this.clientForm.direccion.trim() || null,
     }).subscribe({
       next: (c) => {

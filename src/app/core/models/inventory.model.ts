@@ -6,6 +6,7 @@ export interface InventoryMovementResponse {
   varianteNombre: string;
   existenciaId: number;
   loteCodigo: string | null;
+  origen: string;
   tipoMovimiento: 'entrada' | 'salida' | string;
   motivo: string;
   cantidad: number;

@@ -106,31 +106,34 @@
           <span class="empty-text">No se ha registrado ningún pago para esta venta.</span>
         </div>
         <div class="inner-table-wrap" *ngIf="sale.pagos.length">
-          <table class="data-table table-compact">
+          <table class="data-table table-compact sale-pay-table">
             <thead>
               <tr>
                 <th>Fecha</th>
                 <th>Método</th>
                 <th class="th-num">Monto</th>
                 <th>Estado</th>
-                <th *ngIf="isAdmin"></th>
+                <th class="th-actions"></th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let pg of sale.pagos" class="table-row" [class.row-annulled]="isAnulado(pg.estado)">
                 <td>
-                  <div class="date-cell">
-                    <span class="date-main">{{ pg.fecha | fechaCo }}</span>
-                    <span class="date-time">{{ pg.fecha | fechaCo:'time' }}</span>
+                  <div class="product-info">
+                    <span class="product-name">{{ pg.fecha | fechaCo }}</span>
+                    <span class="product-date">{{ pg.fecha | fechaCo:'time' }}</span>
                   </div>
                 </td>
                 <td><span class="category-badge">{{ metodoPagoLabel(pg.metodoPago) }}</span></td>
                 <td class="td-num price-cell price-ok" [class.strike]="isAnulado(pg.estado)">{{ pg.monto | cop }}</td>
                 <td><span class="status-badge" [ngClass]="isAnulado(pg.estado) ? 'doc-anulada' : 'status-active'">{{ pg.estado }}</span></td>
-                <td *ngIf="isAdmin">
-                  <button class="action-btn btn-sm action-delete" *ngIf="!isAnulado(pg.estado) && !isAnulado(sale.estado)" (click)="annulPayment = pg; annulError = ''" title="Anular pago">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                  </button>
+                <td class="td-actions">
+                  <div class="action-btns pay-row-actions">
+                    <app-receipt-actions tipo="abono" [documentoId]="pg.id" [clienteId]="sale.clienteId" [compact]="true" [payRow]="true" label="Comprobante"></app-receipt-actions>
+                    <button class="action-btn btn-sm action-delete" *ngIf="isAdmin && !isAnulado(pg.estado) && !isAnulado(sale.estado)" (click)="annulPayment = pg; annulError = ''" title="Anular pago">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -144,11 +147,14 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         Anular venta
       </button>
-      <button class="btn-secondary" (click)="close()">Cerrar</button>
-      <button class="btn-success" *ngIf="canPay" (click)="showPayment = true">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        Abonar
-      </button>
+      <div class="modal-footer-group">
+        <app-receipt-actions tipo="venta" [documentoId]="sale.id" [clienteId]="sale.clienteId" label="Descargar comprobante de venta"></app-receipt-actions>
+        <button class="btn-secondary" (click)="close()">Cerrar</button>
+        <button class="btn-success" *ngIf="canPay" (click)="showPayment = true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          Abonar
+        </button>
+      </div>
     </div>
   </div>
 </div>

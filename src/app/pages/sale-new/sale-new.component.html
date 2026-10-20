@@ -258,6 +258,11 @@
         <input class="form-input" [(ngModel)]="clientForm.telefono" maxlength="20" placeholder="300 123 4567" />
       </div>
       <div class="form-group">
+        <label class="form-label">Correo <span class="form-optional">opcional</span></label>
+        <input class="form-input" type="email" [class.input-invalid]="clientFieldErrors['email']" [(ngModel)]="clientForm.email" maxlength="100" placeholder="cliente@correo.com" />
+        <span class="field-error" *ngIf="clientFieldErrors['email']">{{ clientFieldErrors['email'] }}</span>
+      </div>
+      <div class="form-group">
         <label class="form-label">Dirección <span class="form-optional">opcional</span></label>
         <input class="form-input" [(ngModel)]="clientForm.direccion" maxlength="150" />
       </div>
@@ -356,6 +361,7 @@
         <div class="totals-row"><span>Costo de la venta</span><strong>{{ receipt.costoTotal | cop }}</strong></div>
         <div class="totals-row"><span>Ganancia</span><strong class="price-ok">{{ receipt.ganancia | cop }}</strong></div>
       </div>
+      <app-receipt-actions tipo="venta" [documentoId]="receipt.id" [clienteId]="receipt.clienteId" [correoSugerido]="client?.email ?? null"></app-receipt-actions>
     </div>
     <div class="modal-footer receipt-footer">
       <button class="btn-secondary" (click)="goToClient()">Ir al cliente</button>

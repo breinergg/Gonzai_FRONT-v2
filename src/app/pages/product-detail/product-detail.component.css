@@ -152,7 +152,8 @@
   vertical-align: middle;
 }
 
-/* Tabla movimientos: columna stock compacta */
+/* Tabla movimientos: cantidad y stock solo ocupan el número */
+.movements-table .col-qty,
 .movements-table .col-stock {
   width: 1%;
   white-space: nowrap;

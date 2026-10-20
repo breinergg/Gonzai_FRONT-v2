@@ -9,7 +9,7 @@ import { InventoryAdjustmentRequest, InventoryMovementResponse, MOTIVOS_MOVIMIEN
 import { ProductVariant, variantLabel } from '../../core/models/product.model';
 import { StockAvailability } from '../../core/models/lot.model';
 import { parseApiError } from '../../core/utils/api-error';
-import { dayColombia, initials } from '../../core/utils/format';
+import { dayColombia } from '../../core/utils/format';
 import { CopPipe } from '../../shared/pipes/cop.pipe';
 import { FechaCoPipe } from '../../shared/pipes/fecha-co.pipe';
 import { VariantSelectorComponent } from '../../shared/components/variant-selector/variant-selector.component';
@@ -32,7 +32,6 @@ export class InventoryComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   readonly isAdmin = this.auth.isAdmin();
-  readonly initials = initials;
   readonly motivoLabel = motivoLabel;
   readonly motivos = Object.entries(MOTIVOS_MOVIMIENTO).map(([value, label]) => ({ value, label }));
   readonly descMax = DESC_MAX;

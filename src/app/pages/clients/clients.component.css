@@ -1,5 +1,23 @@
 a.btn-add, a.action-btn { text-decoration: none; }
 
+.clients-table-header { flex-wrap: nowrap; }
+.clients-table-header .table-header-left { flex-shrink: 0; }
+
+.clients-table-header .table-header-actions {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.clients-table-header .table-search {
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+.clients-table-header .table-search input { width: 100%; min-width: 0; }
+.clients-table-header .table-filter { flex-shrink: 1; min-width: 0; }
+.clients-table-header .header-chip,
+.clients-table-header .btn-add { flex-shrink: 0; }
+
 .btn-ghost {
   background: rgba(255,255,255,0.06);
   box-shadow: none;
