@@ -35,6 +35,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
   tieneLogo = false;
   logoUrl: string | null = null;
 
+  tieneClaveIa = false;
+  claveIaFecha: string | null = null;
+  claveIaInput = '';
+  mostrarClaveIa = false;
+  guardandoClaveIa = false;
+  claveIaError = '';
+  claveIaMensaje = '';
+
   ngOnInit(): void {
     this.negocioService.get(true).subscribe({
       next: (negocio) => {
@@ -122,6 +130,54 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
+  guardarClaveIa(): void {
+    if (this.guardandoClaveIa) return;
+    const clave = this.claveIaInput.trim();
+    this.claveIaError = '';
+    this.claveIaMensaje = '';
+    if (!clave) {
+      this.claveIaError = 'Pega tu clave de Gemini antes de guardar.';
+      return;
+    }
+    this.guardandoClaveIa = true;
+    this.negocioService.configurarClaveGemini(clave).subscribe({
+      next: (negocio) => {
+        this.applyIa(negocio);
+        this.claveIaInput = '';
+        this.mostrarClaveIa = false;
+        this.claveIaMensaje = 'Clave guardada. El asistente de IA ya la está usando.';
+        this.guardandoClaveIa = false;
+      },
+      error: (err) => {
+        this.claveIaError = parseApiError(err, 'No se pudo guardar la clave.').message;
+        this.guardandoClaveIa = false;
+      },
+    });
+  }
+
+  quitarClaveIa(): void {
+    if (this.guardandoClaveIa || !this.tieneClaveIa) return;
+    this.guardandoClaveIa = true;
+    this.claveIaError = '';
+    this.claveIaMensaje = '';
+    this.negocioService.quitarClaveGemini().subscribe({
+      next: (negocio) => {
+        this.applyIa(negocio);
+        this.claveIaMensaje = 'Se quitó tu clave. El asistente vuelve a usar la clave compartida de GonzAI.';
+        this.guardandoClaveIa = false;
+      },
+      error: (err) => {
+        this.claveIaError = parseApiError(err, 'No se pudo quitar la clave.').message;
+        this.guardandoClaveIa = false;
+      },
+    });
+  }
+
+  private applyIa(negocio: NegocioResponse): void {
+    this.tieneClaveIa = negocio.tieneClaveIaPropia;
+    this.claveIaFecha = negocio.claveIaFecha;
+  }
+
   private apply(negocio: NegocioResponse, reloadLogo = false): void {
     this.nombreComercial = negocio.nombreComercial ?? '';
     this.telefono = negocio.telefono ?? '';
@@ -130,6 +186,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.mensaje = negocio.mensaje ?? '';
     this.formato = negocio.formatoPredeterminado === 'media-carta' ? 'media-carta' : 'termico';
     this.tieneLogo = negocio.tieneLogo;
+    this.applyIa(negocio);
     if (!negocio.tieneLogo) {
       this.revokeLogo();
       return;

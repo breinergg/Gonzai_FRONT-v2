@@ -37,6 +37,18 @@ export class NegocioService {
     return this.http.delete<NegocioResponse>(`${this.apiUrl}/logo`).pipe(tap(negocio => this.remember(negocio)));
   }
 
+  configurarClaveGemini(apiKey: string): Observable<NegocioResponse> {
+    return this.http
+      .put<NegocioResponse>(`${this.apiUrl}/ia/gemini`, { apiKey })
+      .pipe(tap(negocio => this.remember(negocio)));
+  }
+
+  quitarClaveGemini(): Observable<NegocioResponse> {
+    return this.http
+      .delete<NegocioResponse>(`${this.apiUrl}/ia/gemini`)
+      .pipe(tap(negocio => this.remember(negocio)));
+  }
+
   private remember(negocio: NegocioResponse): void {
     this.cache$ = of(negocio);
   }

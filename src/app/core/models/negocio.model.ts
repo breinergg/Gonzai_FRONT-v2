@@ -9,6 +9,8 @@ export interface NegocioResponse {
   mensaje: string;
   formatoPredeterminado: FormatoComprobante | string;
   tieneLogo: boolean;
+  tieneClaveIaPropia: boolean;
+  claveIaFecha: string | null;
 }
 
 export interface NegocioUpdateRequest {
