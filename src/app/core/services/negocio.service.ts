@@ -61,6 +61,22 @@ export class NegocioService {
       .pipe(tap(negocio => this.remember(negocio)));
   }
 
+  configurarSmtp(dto: { usuario: string; password: string; host?: string; puerto?: number; seguridad?: string }): Observable<NegocioResponse> {
+    return this.http
+      .put<NegocioResponse>(`${this.apiUrl}/smtp`, dto)
+      .pipe(tap(negocio => this.remember(negocio)));
+  }
+
+  quitarSmtp(): Observable<NegocioResponse> {
+    return this.http
+      .delete<NegocioResponse>(`${this.apiUrl}/smtp`)
+      .pipe(tap(negocio => this.remember(negocio)));
+  }
+
+  probarSmtp(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/smtp/probar`, null);
+  }
+
   private remember(negocio: NegocioResponse): void {
     this.cache$ = of(negocio);
     this.actual.set(negocio);

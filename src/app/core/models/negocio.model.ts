@@ -11,6 +11,9 @@ export interface NegocioResponse {
   tieneLogo: boolean;
   tieneClaveIaPropia: boolean;
   claveIaFecha: string | null;
+  tieneSmtpPropio: boolean;
+  smtpUsuario: string | null;
+  smtpFecha: string | null;
 }
 
 export interface NegocioUpdateRequest {

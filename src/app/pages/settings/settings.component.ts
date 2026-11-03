@@ -43,6 +43,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
   claveIaError = '';
   claveIaMensaje = '';
 
+  tieneSmtpPropio = false;
+  smtpUsuarioActivo: string | null = null;
+  smtpUsuarioInput = '';
+  smtpPasswordInput = '';
+  mostrarSmtpPassword = false;
+  smtpOtroProveedor = false;
+  smtpHostInput = '';
+  smtpPuertoInput: number | null = null;
+  smtpSeguridadInput: 'starttls' | 'ssl' | 'none' = 'starttls';
+  guardandoSmtp = false;
+  probandoSmtp = false;
+  smtpError = '';
+  smtpMensaje = '';
+
   ngOnInit(): void {
     this.negocioService.get(true).subscribe({
       next: (negocio) => {
@@ -178,6 +192,80 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.claveIaFecha = negocio.claveIaFecha;
   }
 
+  guardarSmtp(): void {
+    if (this.guardandoSmtp) return;
+    const usuario = this.smtpUsuarioInput.trim();
+    const password = this.smtpPasswordInput.trim();
+    this.smtpError = '';
+    this.smtpMensaje = '';
+    if (!usuario || !password) {
+      this.smtpError = 'Escribe tu correo y la contraseña de aplicación antes de guardar.';
+      return;
+    }
+    this.guardandoSmtp = true;
+    this.negocioService
+      .configurarSmtp({
+        usuario,
+        password,
+        host: this.smtpOtroProveedor ? this.smtpHostInput.trim() || undefined : undefined,
+        puerto: this.smtpOtroProveedor ? this.smtpPuertoInput ?? undefined : undefined,
+        seguridad: this.smtpOtroProveedor ? this.smtpSeguridadInput : undefined,
+      })
+      .subscribe({
+        next: (negocio) => {
+          this.applySmtp(negocio);
+          this.smtpPasswordInput = '';
+          this.mostrarSmtpPassword = false;
+          this.smtpMensaje = 'Correo guardado. Pruébalo para confirmar que funciona.';
+          this.guardandoSmtp = false;
+        },
+        error: (err) => {
+          this.smtpError = parseApiError(err, 'No se pudo guardar el correo.').message;
+          this.guardandoSmtp = false;
+        },
+      });
+  }
+
+  probarSmtp(): void {
+    if (this.probandoSmtp || !this.tieneSmtpPropio) return;
+    this.probandoSmtp = true;
+    this.smtpError = '';
+    this.smtpMensaje = '';
+    this.negocioService.probarSmtp().subscribe({
+      next: (res) => {
+        this.smtpMensaje = res.message;
+        this.probandoSmtp = false;
+      },
+      error: (err) => {
+        this.smtpError = parseApiError(err, 'No se pudo enviar el correo de prueba.').message;
+        this.probandoSmtp = false;
+      },
+    });
+  }
+
+  quitarSmtp(): void {
+    if (this.guardandoSmtp || !this.tieneSmtpPropio) return;
+    this.guardandoSmtp = true;
+    this.smtpError = '';
+    this.smtpMensaje = '';
+    this.negocioService.quitarSmtp().subscribe({
+      next: (negocio) => {
+        this.applySmtp(negocio);
+        this.smtpMensaje = 'Se quitó tu correo. Los comprobantes vuelven a enviarse con el correo compartido de GonzAI.';
+        this.guardandoSmtp = false;
+      },
+      error: (err) => {
+        this.smtpError = parseApiError(err, 'No se pudo quitar el correo.').message;
+        this.guardandoSmtp = false;
+      },
+    });
+  }
+
+  private applySmtp(negocio: NegocioResponse): void {
+    this.tieneSmtpPropio = negocio.tieneSmtpPropio;
+    this.smtpUsuarioActivo = negocio.smtpUsuario;
+  }
+
   private apply(negocio: NegocioResponse, reloadLogo = false): void {
     this.nombreComercial = negocio.nombreComercial ?? '';
     this.telefono = negocio.telefono ?? '';
@@ -187,6 +275,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.formato = negocio.formatoPredeterminado === 'media-carta' ? 'media-carta' : 'termico';
     this.tieneLogo = negocio.tieneLogo;
     this.applyIa(negocio);
+    this.applySmtp(negocio);
     if (!negocio.tieneLogo) {
       this.revokeLogo();
       return;

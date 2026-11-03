@@ -30,6 +30,20 @@
 .settings-group-logo .logo-row,
 .settings-group-logo .form-hint { width: 100%; max-width: 320px; }
 
+/* Correo de comprobantes: ocupa las dos columnas, debajo de la cuadrícula pareja de arriba. */
+.settings-group-wide { grid-column: 1 / -1; }
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--mid-metal);
+  cursor: pointer;
+  width: fit-content;
+}
+.form-check input { width: 15px; height: 15px; accent-color: var(--black-matte); cursor: pointer; }
+
 .group-title {
   margin: 0;
   font-size: 0.68rem;
