@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
@@ -10,13 +10,25 @@ export class NegocioService {
   private readonly apiUrl = `${environment.apiUrl}/negocio`;
   private cache$: Observable<NegocioResponse> | null = null;
 
+  /** Último negocio cargado (o null). Lo usa el título de la pestaña del navegador. */
+  readonly actual = signal<NegocioResponse | null>(null);
+
   constructor(private http: HttpClient) {}
 
   get(force = false): Observable<NegocioResponse> {
     if (!this.cache$ || force) {
-      this.cache$ = this.http.get<NegocioResponse>(this.apiUrl).pipe(shareReplay(1));
+      this.cache$ = this.http.get<NegocioResponse>(this.apiUrl).pipe(
+        tap(negocio => this.actual.set(negocio)),
+        shareReplay(1),
+      );
     }
     return this.cache$;
+  }
+
+  /** Al cerrar sesión: evita arrastrar en la pestaña el nombre de la empresa anterior. */
+  clear(): void {
+    this.cache$ = null;
+    this.actual.set(null);
   }
 
   update(dto: NegocioUpdateRequest): Observable<NegocioResponse> {
@@ -51,5 +63,6 @@ export class NegocioService {
 
   private remember(negocio: NegocioResponse): void {
     this.cache$ = of(negocio);
+    this.actual.set(negocio);
   }
 }

@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { LoginRequest, TokenResponse, UsuarioResponse, UserCreateRequest, UserUpdateRequest, ChangePasswordRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
+import { NegocioService } from './negocio.service';
 
 const TOKEN_KEY = 'gonzai_token';
 const USER_KEY  = 'gonzai_user';
@@ -19,7 +20,7 @@ export class AuthService {
   /** Reactive signal so consumers can react to auth state changes */
   readonly currentUser = signal<UsuarioResponse | null>(this.loadUser());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private negocioService: NegocioService) {}
 
   login(credentials: LoginRequest): Observable<TokenResponse> {
     return this.http
@@ -33,6 +34,7 @@ export class AuthService {
     sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(USER_KEY);
     this.currentUser.set(null);
+    this.negocioService.clear();
     this.router.navigate(['/login']);
   }
 
