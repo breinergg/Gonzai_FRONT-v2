@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { PurchaseCreateRequest, PurchaseFilters, PurchaseResponse } from '../models/purchase.model';
-import { AnulacionRequest } from '../models/common.model';
+import { AnulacionRequest, PagedResult } from '../models/common.model';
 import { environment } from '../../../environments/environment';
 import { toParams } from '../utils/http-params';
 import { ProductService } from './product.service';
@@ -13,9 +13,9 @@ export class PurchaseService {
 
   constructor(private http: HttpClient, private products: ProductService) {}
 
-  getAll(filters: PurchaseFilters = {}): Observable<PurchaseResponse[]> {
-    return this.http.get<PurchaseResponse[]>(this.apiUrl, {
-      params: toParams({ proveedorId: filters.proveedorId, desde: filters.desde, hasta: filters.hasta }),
+  getAll(filters: PurchaseFilters = {}): Observable<PagedResult<PurchaseResponse>> {
+    return this.http.get<PagedResult<PurchaseResponse>>(this.apiUrl, {
+      params: toParams({ proveedorId: filters.proveedorId, desde: filters.desde, hasta: filters.hasta, page: filters.page, pageSize: filters.pageSize }),
     });
   }
 

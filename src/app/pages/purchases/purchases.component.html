@@ -126,7 +126,12 @@
   </div>
 
   <div class="table-footer" *ngIf="!loading && !error && filtered.length > 0">
-    <span class="table-count">{{ filtered.length }} de {{ purchases.length }} compras</span>
+    <span class="table-count">{{ filtered.length }} de {{ total }} compras</span>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="pagination-btn" [disabled]="page <= 1" (click)="goToPage(page - 1)">&laquo; Anterior</button>
+      <span class="pagination-info">{{ page }} / {{ totalPages }}</span>
+      <button class="pagination-btn" [disabled]="page >= totalPages" (click)="goToPage(page + 1)">Siguiente &raquo;</button>
+    </div>
   </div>
 </div>
 

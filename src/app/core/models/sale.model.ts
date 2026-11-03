@@ -75,6 +75,8 @@ export interface SaleFilters {
   desde?: string | null;
   hasta?: string | null;
   soloPendientes?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface VentaMensualResumen {

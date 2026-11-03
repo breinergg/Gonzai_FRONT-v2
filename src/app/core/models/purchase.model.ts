@@ -54,4 +54,6 @@ export interface PurchaseFilters {
   proveedorId?: number | null;
   desde?: string | null;
   hasta?: string | null;
+  page?: number;
+  pageSize?: number;
 }

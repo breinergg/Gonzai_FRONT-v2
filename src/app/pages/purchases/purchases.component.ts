@@ -43,6 +43,11 @@ export class PurchasesComponent implements OnInit {
   loading = true;
   error = '';
 
+  page = 1;
+  pageSize = 50;
+  total = 0;
+  totalPages = 0;
+
   detail: PurchaseResponse | null = null;
   detailLoading = false;
   detailError = '';
@@ -68,9 +73,11 @@ export class PurchasesComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.error = '';
-    this.purchaseService.getAll({ proveedorId: this.proveedorId, desde: this.desde, hasta: this.hasta }).subscribe({
+    this.purchaseService.getAll({ proveedorId: this.proveedorId, desde: this.desde, hasta: this.hasta, page: this.page, pageSize: this.pageSize }).subscribe({
       next: (data) => {
-        this.purchases = data;
+        this.purchases = data.items;
+        this.total = data.total;
+        this.totalPages = data.totalPages;
         this.applyFilters();
         this.loading = false;
       },
@@ -93,6 +100,13 @@ export class PurchasesComponent implements OnInit {
   clearDates(): void {
     this.desde = '';
     this.hasta = '';
+    this.page = 1;
+    this.load();
+  }
+
+  goToPage(p: number): void {
+    if (p < 1 || p > this.totalPages) return;
+    this.page = p;
     this.load();
   }
 

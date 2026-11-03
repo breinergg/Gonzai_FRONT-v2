@@ -45,6 +45,11 @@ export class SalesComponent implements OnInit {
   exporting = false;
   exportError = '';
 
+  page = 1;
+  pageSize = 50;
+  total = 0;
+  totalPages = 0;
+
   resumen: VentaMensualResumen | null = null;
 
   detailId: number | null = null;
@@ -68,9 +73,11 @@ export class SalesComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.error = '';
-    this.saleService.getAll({ desde: this.desde, hasta: this.hasta, soloPendientes: this.soloPendientes }).subscribe({
+    this.saleService.getAll({ desde: this.desde, hasta: this.hasta, soloPendientes: this.soloPendientes, page: this.page, pageSize: this.pageSize }).subscribe({
       next: (data) => {
-        this.sales = data;
+        this.sales = data.items;
+        this.total = data.total;
+        this.totalPages = data.totalPages;
         this.applyFilters();
         this.loading = false;
       },
@@ -96,6 +103,13 @@ export class SalesComponent implements OnInit {
 
   togglePendientes(): void {
     this.soloPendientes = !this.soloPendientes;
+    this.page = 1;
+    this.load();
+  }
+
+  goToPage(p: number): void {
+    if (p < 1 || p > this.totalPages) return;
+    this.page = p;
     this.load();
   }
 
@@ -103,6 +117,7 @@ export class SalesComponent implements OnInit {
     this.desde = '';
     this.hasta = '';
     this.exportError = '';
+    this.page = 1;
     this.load();
   }
 

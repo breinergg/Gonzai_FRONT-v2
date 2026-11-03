@@ -109,7 +109,9 @@ export class ReceiptActionsComponent implements OnInit, AfterViewChecked {
     if (this.busy) return;
     this.busy = true;
     this.error = '';
+    this.notice = '';
     this.copied = false;
+    this.showMail = false;
     const request$ = this.tipo === 'venta'
       ? this.receipts.shareSale(this.documentoId, this.formato, regenerar)
       : this.receipts.sharePayment(this.documentoId, this.formato, regenerar);
@@ -130,6 +132,7 @@ export class ReceiptActionsComponent implements OnInit, AfterViewChecked {
     this.showMail = !this.showMail;
     this.error = '';
     this.notice = '';
+    if (this.showMail) this.share = null;
   }
 
   sendMail(): void {

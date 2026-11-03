@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { SaleCreateRequest, SaleFilters, SaleResponse, VentaMensualResumen } from '../models/sale.model';
-import { AnulacionRequest } from '../models/common.model';
+import { AnulacionRequest, PagedResult } from '../models/common.model';
 import { environment } from '../../../environments/environment';
 import { toParams } from '../utils/http-params';
 import { ProductService } from './product.service';
@@ -13,13 +13,15 @@ export class SaleService {
 
   constructor(private http: HttpClient, private products: ProductService) {}
 
-  getAll(filters: SaleFilters = {}): Observable<SaleResponse[]> {
-    return this.http.get<SaleResponse[]>(this.apiUrl, {
+  getAll(filters: SaleFilters = {}): Observable<PagedResult<SaleResponse>> {
+    return this.http.get<PagedResult<SaleResponse>>(this.apiUrl, {
       params: toParams({
         clienteId: filters.clienteId,
         desde: filters.desde,
         hasta: filters.hasta,
         soloPendientes: filters.soloPendientes,
+        page: filters.page,
+        pageSize: filters.pageSize,
       }),
     });
   }
