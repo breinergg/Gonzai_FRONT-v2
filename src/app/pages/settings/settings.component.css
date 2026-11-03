@@ -84,4 +84,4 @@
   .settings-group .form-row { grid-template-columns: 1fr; }
 }
 
-.settings-footer { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+.settings-footer { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.4rem; }
