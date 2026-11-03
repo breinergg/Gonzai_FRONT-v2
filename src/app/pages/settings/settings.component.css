@@ -1,33 +1,69 @@
 .title-stack { display: flex; flex-direction: column; min-width: 0; }
 
-.settings-body { display: flex; flex-direction: column; gap: 0.85rem; }
+.settings-body { padding: 1rem 1.25rem 1.1rem; }
 
-.settings-actions { display: flex; justify-content: flex-end; }
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.settings-main { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; }
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem 0.9rem;
+  border: 1px solid #EFEFEF;
+  border-radius: 12px;
+  background: #FCFCFC;
+}
+
+.group-title {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black-matte);
+}
+
+.settings-group .form-row { gap: 0.65rem; }
+
+.settings-actions { display: flex; justify-content: center; padding-top: 0.1rem; }
 
 .logo-block {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  padding-top: 0.4rem;
-  border-top: 1px solid #EFEFEF;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem 0.9rem;
+  border: 1px solid #EFEFEF;
+  border-radius: 12px;
+  background: #FCFCFC;
 }
 
-.logo-row {
+.logo-stage {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  min-height: 120px;
+  border: 1px dashed #DADADA;
+  border-radius: 10px;
+  background: var(--white-matte);
+  padding: 0.6rem;
 }
 
 .logo-preview {
-  max-width: 220px;
-  max-height: 80px;
+  max-width: 100%;
+  max-height: 100px;
   object-fit: contain;
-  background: var(--white-matte);
-  border: 1px solid #E4E4E4;
-  border-radius: 10px;
-  padding: 0.35rem;
+  border-radius: 8px;
 }
+
+.logo-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.logo-row .btn-light { flex: 1; justify-content: center; text-align: center; white-space: nowrap; }
 
 .logo-file { position: relative; overflow: hidden; cursor: pointer; }
 .logo-file input {
@@ -37,3 +73,12 @@
   cursor: pointer;
 }
 .logo-file input:disabled { cursor: not-allowed; }
+
+@media (max-width: 820px) {
+  .settings-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .settings-group .form-row { grid-template-columns: 1fr; }
+}
+
+.settings-footer { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }

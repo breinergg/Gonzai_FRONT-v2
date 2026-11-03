@@ -45,6 +45,7 @@ export class DashboardComponent implements OnInit {
   chatLoading = false;
   /** Tras limpiar, no se carga historial previo de BD; se usa solo la sesión actual */
   useDbHistory = true;
+  private slowTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly welcomeTexts = [
     '¡Hola! Soy Goncho 👋 Tu asistente de Gonzai. ¿En qué te puedo ayudar hoy?',
@@ -81,9 +82,9 @@ export class DashboardComponent implements OnInit {
       next: (data) => { this.productosActivos = data.productosActivos; },
       error: () => { this.productosActivos = 0; }
     });
-    this.saleService.getAll({ soloPendientes: true }).subscribe({
+    this.saleService.getAll({ soloPendientes: true, pageSize: 200 }).subscribe({
       next: (data) => {
-        const activas = data.filter(v => !isAnulado(v.estado));
+        const activas = data.items.filter(v => !isAnulado(v.estado));
         this.ventasPorCobrar = activas.length;
         this.saldoPorCobrar = activas.reduce((acc, v) => acc + v.saldoPendiente, 0);
       },
@@ -116,12 +117,20 @@ export class DashboardComponent implements OnInit {
     const typingIndex = this.chatMessages.length - 1;
     this.scrollChat();
 
+    this.slowTimer = setTimeout(() => {
+      if (this.chatLoading && this.chatMessages[typingIndex]?.text === 'Escribiendo...') {
+        this.chatMessages[typingIndex] = { from: 'bot', text: 'Tardando más de lo usual, por favor espera...', time };
+        this.scrollChat();
+      }
+    }, 15_000);
+
     this.chatService.send({
       pregunta: text,
       usarHistorialDeBd: this.useDbHistory,
       historial,
     }).subscribe({
       next: (res) => {
+        if (this.slowTimer) { clearTimeout(this.slowTimer); this.slowTimer = null; }
         const localTime = this.formatTime(new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(res.fecha) ? res.fecha : res.fecha + 'Z'));
         this.chatMessages[typingIndex] = { from: 'bot', text: res.respuesta, time: localTime };
         this.chatLoading = false;
@@ -129,13 +138,20 @@ export class DashboardComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.chatLoading = false;
+        if (this.slowTimer) { clearTimeout(this.slowTimer); this.slowTimer = null; }
         if (err.status === 401) {
           this.auth.logout();
           return;
         }
-        const errorText = err.status === 400
-          ? 'Mensaje inválido (vacío o demasiado largo). Intenta de nuevo.'
-          : 'No se pudo obtener respuesta. Intenta de nuevo.';
+        let errorText: string;
+        if (err.status === 429) {
+          const retryAfter = err.error?.retryAfterSeconds ?? 60;
+          errorText = `⏳ Has alcanzado el límite de consultas. Espera ${retryAfter} segundos e intenta de nuevo.`;
+        } else if (err.status === 400) {
+          errorText = 'Mensaje inválido (vacío o demasiado largo). Intenta de nuevo.';
+        } else {
+          errorText = 'No se pudo obtener respuesta. Intenta de nuevo.';
+        }
         this.chatMessages[typingIndex] = { from: 'bot', text: errorText, time };
         this.scrollChat();
       },

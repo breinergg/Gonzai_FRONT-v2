@@ -105,11 +105,11 @@ export class ClientDetailComponent implements OnInit {
   loadHistory(): void {
     this.historyError = '';
     forkJoin({
-      sales: this.saleService.getAll({ clienteId: this.clientId }),
+      sales: this.saleService.getAll({ clienteId: this.clientId, pageSize: 200 }),
       payments: this.paymentService.getByClient(this.clientId),
     }).subscribe({
       next: ({ sales, payments }) => {
-        this.sales = sales;
+        this.sales = sales.items;
         this.payments = payments;
       },
       error: (err) => (this.historyError = parseApiError(err, 'No se pudo cargar el historial.').message),

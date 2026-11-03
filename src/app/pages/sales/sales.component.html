@@ -18,9 +18,9 @@
         <input type="text" placeholder="Cliente, prenda, # venta…" [(ngModel)]="searchTerm" (input)="applyFilters()" />
       </div>
       <div class="date-range-wrap">
-        <input type="date" class="date-input" [(ngModel)]="desde" (change)="load()" title="Desde" />
+        <input type="date" class="date-input" [(ngModel)]="desde" (change)="page = 1; load()" title="Desde" />
         <span class="date-range-sep">→</span>
-        <input type="date" class="date-input" [(ngModel)]="hasta" (change)="load()" title="Hasta" />
+        <input type="date" class="date-input" [(ngModel)]="hasta" (change)="page = 1; load()" title="Hasta" />
         <button class="date-clear-btn" *ngIf="desde || hasta" (click)="clearDates()" title="Limpiar filtro">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -162,7 +162,12 @@
   </div>
 
   <div class="table-footer" *ngIf="!loading && !error">
-    <span class="table-count">{{ filtered.length }} de {{ sales.length }} ventas</span>
+    <span class="table-count">{{ filtered.length }} de {{ total }} ventas</span>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="pagination-btn" [disabled]="page <= 1" (click)="goToPage(page - 1)">&laquo; Anterior</button>
+      <span class="pagination-info">{{ page }} / {{ totalPages }}</span>
+      <button class="pagination-btn" [disabled]="page >= totalPages" (click)="goToPage(page + 1)">Siguiente &raquo;</button>
+    </div>
     <div class="table-export">
       <button class="table-export-chip" type="button" [class.chip-on]="incluirAnuladas" (click)="incluirAnuladas = !incluirAnuladas" [disabled]="exporting">
         Incluir anuladas

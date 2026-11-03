@@ -1702,3 +1702,13 @@ a.link-cell:hover .product-name, .link-cell:hover { text-decoration: underline; 
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ── Pagination ─── */
+.pagination { display: flex; align-items: center; gap: 8px; }
+.pagination-btn {
+  padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-primary); font-size: 0.8rem; cursor: pointer; transition: background 0.15s;
+}
+.pagination-btn:hover:not(:disabled) { background: var(--bg-hover); }
+.pagination-btn:disabled { opacity: 0.4; cursor: default; }
+.pagination-info { font-size: 0.8rem; color: var(--text-secondary); }
