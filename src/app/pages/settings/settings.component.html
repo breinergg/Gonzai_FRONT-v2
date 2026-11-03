@@ -23,79 +23,77 @@
 
   <div class="section-body settings-body">
     <div class="settings-grid">
-      <div class="settings-main">
-        <section class="settings-group">
-          <h4 class="group-title">Datos del negocio</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Nombre comercial <span class="form-required">*</span></label>
-              <input class="form-input input-sm" [(ngModel)]="nombreComercial" maxlength="100" placeholder="GonzAI Ropa" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Teléfono <span class="form-optional">opcional</span></label>
-              <input class="form-input input-sm" [(ngModel)]="telefono" maxlength="20" placeholder="3000000000" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Ciudad <span class="form-optional">opcional</span></label>
-              <input class="form-input input-sm" [(ngModel)]="ciudad" maxlength="80" placeholder="Medellín" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Correo de respuesta <span class="form-optional">opcional</span></label>
-              <input class="form-input input-sm" type="email" [(ngModel)]="correoRespuesta" maxlength="100" placeholder="ventas@latienda.com" />
-            </div>
-          </div>
-          <span class="form-hint">Las respuestas del cliente llegan al correo de respuesta; el mensaje lo envía la plataforma.</span>
-        </section>
-
-        <section class="settings-group">
-          <h4 class="group-title">Comprobante</h4>
+      <section class="settings-group">
+        <h4 class="group-title">Datos del negocio</h4>
+        <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Mensaje <span class="form-optional">opcional</span></label>
-            <input class="form-input input-sm" [(ngModel)]="mensaje" maxlength="200" placeholder="Gracias por tu compra." />
+            <label class="form-label">Nombre comercial <span class="form-required">*</span></label>
+            <input class="form-input input-sm" [(ngModel)]="nombreComercial" maxlength="100" placeholder="GonzAI Ropa" />
           </div>
           <div class="form-group">
-            <label class="form-label">Formato predeterminado</label>
-            <div class="chip-group">
-              <button type="button" class="chip" [class.chip-selected]="formato === 'termico'" (click)="formato = 'termico'">Térmico 80 mm</button>
-              <button type="button" class="chip" [class.chip-selected]="formato === 'media-carta'" (click)="formato = 'media-carta'">Media carta</button>
-            </div>
-            <span class="form-hint">Se usa al descargar, enviar o compartir si no eliges otro formato.</span>
+            <label class="form-label">Teléfono <span class="form-optional">opcional</span></label>
+            <input class="form-input input-sm" [(ngModel)]="telefono" maxlength="20" placeholder="3000000000" />
           </div>
-        </section>
-      </div>
+          <div class="form-group">
+            <label class="form-label">Ciudad <span class="form-optional">opcional</span></label>
+            <input class="form-input input-sm" [(ngModel)]="ciudad" maxlength="80" placeholder="Medellín" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo de respuesta <span class="form-optional">opcional</span></label>
+            <input class="form-input input-sm" type="email" [(ngModel)]="correoRespuesta" maxlength="100" placeholder="ventas@latienda.com" />
+          </div>
+        </div>
+        <span class="form-hint">Las respuestas del cliente llegan al correo de respuesta; el mensaje lo envía la plataforma.</span>
+      </section>
 
-      <aside class="settings-aside">
-        <div class="logo-block">
-          <h4 class="group-title">Logo</h4>
-          <div class="logo-stage">
-            <img *ngIf="logoUrl" class="logo-preview" [src]="logoUrl" alt="Logo del negocio" />
-            <span class="cell-empty" *ngIf="!logoUrl">Sin logo</span>
+      <section class="settings-group settings-group-logo">
+        <h4 class="group-title">Logo</h4>
+        <div class="logo-stage">
+          <img *ngIf="logoUrl" class="logo-preview" [src]="logoUrl" alt="Logo del negocio" />
+          <span class="cell-empty" *ngIf="!logoUrl">Sin logo</span>
+        </div>
+        <div class="logo-row">
+          <label class="btn-light logo-file">
+            {{ uploading ? 'Subiendo...' : (tieneLogo ? 'Cambiar PNG' : 'Subir PNG') }}
+            <input type="file" accept="image/png,.png" (change)="onLogo($event)" [disabled]="uploading" />
+          </label>
+          <button class="btn-light" type="button" *ngIf="tieneLogo" (click)="removeLogo()" [disabled]="uploading">Quitar</button>
+        </div>
+        <span class="form-hint">PNG, máx. 500 KB y 2000 px por lado. Recomendado 600×200 o 400×400.</span>
+        <div class="alert alert-error" *ngIf="logoError">{{ logoError }}</div>
+      </section>
+
+      <section class="settings-group">
+        <h4 class="group-title">Comprobante</h4>
+        <div class="form-group">
+          <label class="form-label">Mensaje <span class="form-optional">opcional</span></label>
+          <input class="form-input input-sm" [(ngModel)]="mensaje" maxlength="200" placeholder="Gracias por tu compra." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Formato predeterminado</label>
+          <div class="chip-group">
+            <button type="button" class="chip" [class.chip-selected]="formato === 'termico'" (click)="formato = 'termico'">Térmico 80 mm</button>
+            <button type="button" class="chip" [class.chip-selected]="formato === 'media-carta'" (click)="formato = 'media-carta'">Media carta</button>
           </div>
-          <div class="logo-row">
-            <label class="btn-light logo-file">
-              {{ uploading ? 'Subiendo...' : (tieneLogo ? 'Cambiar PNG' : 'Subir PNG') }}
-              <input type="file" accept="image/png,.png" (change)="onLogo($event)" [disabled]="uploading" />
-            </label>
-            <button class="btn-light" type="button" *ngIf="tieneLogo" (click)="removeLogo()" [disabled]="uploading">Quitar</button>
-          </div>
-          <span class="form-hint">PNG, máx. 500 KB y 2000 px por lado. Recomendado 600×200 o 400×400.</span>
-          <div class="alert alert-error" *ngIf="logoError">{{ logoError }}</div>
+          <span class="form-hint">Se usa al descargar, enviar o compartir si no eliges otro formato.</span>
+        </div>
+      </section>
+
+      <section class="settings-group">
+        <h4 class="group-title">Asistente de IA</h4>
+
+        <div class="alert" [class.alert-success]="tieneClaveIa" [class.alert-info]="!tieneClaveIa">
+          <span *ngIf="tieneClaveIa">
+            Usando tu propia clave de Gemini. No tienes el límite diario de GonzAI.
+          </span>
+          <span *ngIf="!tieneClaveIa">
+            Usando la clave compartida de GonzAI, con límite diario. Agrega tu propia clave gratuita para no depender de él.
+          </span>
         </div>
 
-        <div class="logo-block">
-          <h4 class="group-title">Asistente de IA</h4>
-
-          <div class="alert" [class.alert-success]="tieneClaveIa" [class.alert-info]="!tieneClaveIa">
-            <span *ngIf="tieneClaveIa">
-              Usando tu propia clave de Gemini. No tienes el límite diario de GonzAI.
-            </span>
-            <span *ngIf="!tieneClaveIa">
-              Usando la clave compartida de GonzAI, con límite diario. Agrega tu propia clave gratuita para no depender de él.
-            </span>
-          </div>
-
-          <div class="form-group" *ngIf="!tieneClaveIa">
-            <label class="form-label">Tu clave de Gemini <span class="form-optional">opcional</span></label>
+        <div class="form-group" *ngIf="!tieneClaveIa">
+          <label class="form-label">Tu clave de Gemini <span class="form-optional">opcional</span></label>
+          <div class="chip-input-row">
             <input
               class="form-input input-sm"
               [type]="mostrarClaveIa ? 'text' : 'password'"
@@ -104,31 +102,29 @@
               autocomplete="off"
               placeholder="AIza..."
             />
-            <div class="logo-row">
-              <button class="btn-light" type="button" (click)="mostrarClaveIa = !mostrarClaveIa">
-                {{ mostrarClaveIa ? 'Ocultar' : 'Mostrar' }}
-              </button>
-              <button class="btn-light" type="button" (click)="guardarClaveIa()" [disabled]="guardandoClaveIa">
-                {{ guardandoClaveIa ? 'Guardando...' : 'Guardar' }}
-              </button>
-            </div>
-            <span class="form-hint">
-              Es gratis. Consíguela en
-              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>
-              con cualquier cuenta de Google.
-            </span>
-          </div>
-
-          <div class="logo-row" *ngIf="tieneClaveIa">
-            <button class="btn-light" type="button" (click)="quitarClaveIa()" [disabled]="guardandoClaveIa">
-              {{ guardandoClaveIa ? 'Quitando...' : 'Quitar mi clave' }}
+            <button class="btn-light" type="button" (click)="mostrarClaveIa = !mostrarClaveIa">
+              {{ mostrarClaveIa ? 'Ocultar' : 'Mostrar' }}
+            </button>
+            <button class="btn-light" type="button" (click)="guardarClaveIa()" [disabled]="guardandoClaveIa">
+              {{ guardandoClaveIa ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
-
-          <div class="alert alert-error" *ngIf="claveIaError">{{ claveIaError }}</div>
-          <div class="alert alert-success" *ngIf="claveIaMensaje">{{ claveIaMensaje }}</div>
+          <span class="form-hint">
+            Es gratis. Consíguela en
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>
+            con cualquier cuenta de Google y pégala aquí.
+          </span>
         </div>
-      </aside>
+
+        <div class="logo-row" *ngIf="tieneClaveIa">
+          <button class="btn-light" type="button" (click)="quitarClaveIa()" [disabled]="guardandoClaveIa">
+            {{ guardandoClaveIa ? 'Quitando...' : 'Quitar mi clave' }}
+          </button>
+        </div>
+
+        <div class="alert alert-error" *ngIf="claveIaError">{{ claveIaError }}</div>
+        <div class="alert alert-success" *ngIf="claveIaMensaje">{{ claveIaMensaje }}</div>
+      </section>
     </div>
 
     <div class="settings-footer">
