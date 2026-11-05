@@ -773,3 +773,21 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* ================================================
+   MÓVIL
+   ================================================ */
+@media (max-width: 900px) {
+  :host { padding: 1rem; gap: 1rem; }
+
+  .table-header { flex-direction: column; align-items: flex-start; gap: 0.65rem; }
+  .table-header-left { flex-wrap: wrap; }
+  .table-header-actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+  .table-search { flex: 1 1 100%; min-width: 0; }
+  .table-search input { width: 100%; min-width: 0; }
+  .table-filter { flex: 1 1 130px; min-width: 0; }
+  .btn-add { flex: 1 1 auto; justify-content: center; }
+
+  /* La tabla es más ancha que el teléfono: que se desplace en vez de cortarse */
+  .table-wrap { overflow-x: auto; }
+}

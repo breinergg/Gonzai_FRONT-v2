@@ -1,8 +1,13 @@
 import { Component, computed, inject, HostListener } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+
+/** Debe coincidir con el breakpoint del cajón en layout.component.css. */
+const MOBILE_QUERY = '(max-width: 900px)';
 
 interface NavItem {
   id: string;
@@ -26,9 +31,22 @@ export class LayoutComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
 
-  sidebarCollapsed = false;
+  // En móvil el menú es un cajón: arranca cerrado para no tapar el contenido.
+  sidebarCollapsed = this.isMobile();
   searchTerm = '';
   searchFocused = false;
+
+  constructor() {
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => {
+        if (this.isMobile()) this.sidebarCollapsed = true;
+      });
+  }
+
+  private isMobile(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches;
+  }
 
   readonly allNavItems: NavItem[] = [
     { id: 'dashboard',    label: 'Dashboard',     icon: 'grid',       route: '/dashboard',     adminOnly: false, keywords: ['inicio', 'panel', 'principal', 'asistente', 'goncho', 'chat', 'ia'] },
@@ -86,6 +104,10 @@ export class LayoutComponent {
 
   toggleSidebar(): void {
     this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+
+  closeSidebar(): void {
+    this.sidebarCollapsed = true;
   }
 
   onSearchFocus(): void {

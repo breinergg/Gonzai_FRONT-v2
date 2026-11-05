@@ -487,6 +487,10 @@
   color: var(--black-matte);
 }
 
+/* Hamburguesa y fondo del cajón: solo existen en móvil (ver @media 900px) */
+.topbar-menu,
+.sidebar-backdrop { display: none; }
+
 .topbar-btn-logout:hover {
   background: rgba(220, 38, 38, 0.08);
   border-color: rgba(220, 38, 38, 0.3);
@@ -525,7 +529,19 @@
     transform: translateX(0);
     box-shadow: 4px 0 24px rgba(0,0,0,0.25);
   }
-  .search-container { width: 220px; }
+  .topbar { gap: 0.6rem; }
+  .topbar-menu { display: flex; flex-shrink: 0; }
+  .topbar-actions { flex-shrink: 0; }
+  .search-container { flex: 1 1 auto; width: auto; min-width: 0; max-width: 320px; }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 90;
+    animation: dashFadeIn 0.2s ease-out both;
+  }
 
   /* En móvil el sidebar es un cajón flotante: el área blanca ocupa todo */
   .dashboard-layout,
@@ -534,7 +550,6 @@
 
 @media (max-width: 600px) {
   .topbar { padding: 0.75rem 1rem; }
-  .search-container { width: 180px; }
 }
 
 /* ================================================

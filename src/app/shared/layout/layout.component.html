@@ -46,11 +46,21 @@
 
   </aside>
 
+  <!-- Fondo del cajón (solo móvil): tocar fuera lo cierra -->
+  <div class="sidebar-backdrop" *ngIf="!sidebarCollapsed" (click)="closeSidebar()"></div>
+
   <!-- MAIN AREA -->
   <div class="main-area">
 
     <!-- Top bar -->
     <header class="topbar">
+      <!-- Abre el menú (solo móvil) -->
+      <button class="topbar-btn topbar-menu" type="button" (click)="toggleSidebar()" aria-label="Abrir menú">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
       <div class="search-container">
         <div class="search-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
