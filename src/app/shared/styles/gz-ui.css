@@ -1687,6 +1687,8 @@ a.link-cell:hover .product-name, .link-cell:hover { text-decoration: underline; 
     gap: 0.65rem;
   }
   .table-card .table-header .table-header-left { flex: 0 0 auto; flex-wrap: wrap; max-width: 100%; }
+  /* Título con subtítulo: el ícono y el texto van en la misma fila (el subtítulo hace wrap solo) */
+  .table-card .table-header .table-header-left:has(.title-stack) { flex-wrap: nowrap; align-items: flex-start; width: 100%; }
   .table-card .table-header .table-header-actions {
     width: 100%;
     flex: 0 0 auto;
