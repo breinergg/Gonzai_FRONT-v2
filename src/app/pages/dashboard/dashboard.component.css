@@ -494,7 +494,8 @@
 }
 
 @media (max-width: 600px) {
-  .summary-grid { grid-template-columns: 1fr; }
+  /* 2 por fila cuando caben; 1 solo en pantallas muy angostas */
+  .summary-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
 }
 
 /* ── Shared icon+title row ─── */
@@ -1048,9 +1049,17 @@
 }
 
 @media (max-width: 900px) {
+  /* En móvil la página crece con su contenido y hace scroll. Antes todo se encogía al alto
+     de la pantalla y la tarjeta de resumen (overflow: hidden) quedaba recortada. */
+  :host { flex: 0 0 auto; min-height: auto; }
   .content-grid {
     grid-template-columns: 1fr;
+    flex: 0 0 auto;
+    min-height: auto;
   }
+  .col-center { min-height: auto; }
+  .col-center > .card { flex-shrink: 0; }
+  .chat-card { flex: 0 0 auto; height: 480px; min-height: 0; }
   .col-left {
     flex-direction: row;
     overflow-x: auto;
